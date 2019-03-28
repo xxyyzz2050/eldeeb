@@ -1,22 +1,29 @@
 {
   "name": "eldeeb",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "description": "",
   "main": "index.js",
   "directories": {
     "lib": "lib",
     "test": "test"
   },
+  "dependencies": {
+    "mongoose": "^5.3.13",
+    "mongodb": "^3.1.10",
+    "shortid": "^2.2.14"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xxyyzz2050/eldeeb.git"
+  },
   "author": "",
   "license": "ISC",
-  "keywords": [],
-  "description": "",
-  "devDependencies": {},
-  "dependencies": {
-    "mongodb": "^3.1.10",
-    "mongoose": "^5.3.13",
-    "shortid": "^2.2.14"
-  }
+  "bugs": {
+    "url": "https://github.com/xxyyzz2050/eldeeb/issues"
+  },
+  "homepage": "https://github.com/xxyyzz2050/eldeeb#readme"
 }
