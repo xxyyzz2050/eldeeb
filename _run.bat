@@ -1,0 +1,1 @@
+call node test/db.js

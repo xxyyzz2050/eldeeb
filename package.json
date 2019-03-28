@@ -1,0 +1,22 @@
+{
+  "name": "eldeeb",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "description": "",
+  "devDependencies": {},
+  "dependencies": {
+    "mongodb": "^3.1.10",
+    "mongoose": "^5.3.13",
+    "shortid": "^2.2.14"
+  }
+}
