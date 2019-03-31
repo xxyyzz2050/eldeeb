@@ -327,7 +327,7 @@ class db_mongoDB_model extends model {
 }
 
 class db_mongoDB_schema extends Schema {
-  constructor(obj, options, indexes) {
+  constructor(obj, options?, indexes?) {
     super(); //added temporary for typescript
     //console.log('==obj==', obj)
     return eldeeb.run("()", () => {
