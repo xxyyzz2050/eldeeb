@@ -6,7 +6,15 @@ eldeeb.options.mark = "error";
 - wrong: throw new Error() from this file, will include file & lineNumber of this file (not the file witch throw the error), so we have to get the correct file,lineNumber
 
 */
-export default function(err, throwError?: boolean, jsError?: boolean) {
+interface ErrObj {
+  num?: number;
+  type?: string;
+  msg?: string;
+  link?: string;
+  details?: any;
+}
+type Err = number | Array<any> | ErrObj | (() => Err);
+export default function(err: Err, throwError?: boolean, jsError?: boolean) {
   //or: class error extends Error -> to add trace to error info (returns only Error object, not object)
   let errors = {
     0: {
@@ -29,23 +37,25 @@ export default function(err, throwError?: boolean, jsError?: boolean) {
       link: err[3],
       details: err[4]
     };
-  else if (typeof err == "number") err = { num: err, type: "eldeeb" };
+  else if (typeof err == "number") err = <Err>{ num: err, type: "eldeeb" };
 
-  if (eldeeb.objectType(err) == "object") {
+  if (<ErrObj>err) {
+    //eldeeb.objectType(err) == "object"
     //if(eldeeb.isEmpty(tmp.type)||tmp.type=="eldeeb"){tmp[1]="eldeeb"; err=errors[tmp.num]}
-    if (err.type == "eldeeb") {
+    if ((<ErrObj>err).type == "eldeeb") {
       //standard eldeeb error
-      this.err = errors[err.num];
-    } else this.err = { type: err.type };
-    this.err.num = err.num;
+      this.err = errors[(<ErrObj>err).num];
+    } else this.err = { type: (<ErrObj>err).type };
+    this.err.num = (<ErrObj>err).num;
     //override default err object
-    if (!eldeeb.isEmpty(err.msg)) this.err.msg = err.msg;
-    if (!eldeeb.isEmpty(err.details)) this.err.details = err.details;
-    this.err.link = (!eldeeb.isEmpty(err.link)
-      ? err.link
+    if (!eldeeb.isEmpty((<ErrObj>err).msg)) this.err.msg = (<ErrObj>err).msg;
+    if (!eldeeb.isEmpty((<ErrObj>err).details))
+      this.err.details = (<ErrObj>err).details;
+    this.err.link = (!eldeeb.isEmpty((<ErrObj>err).link)
+      ? (<ErrObj>err).link
       : "https://eldeeb.com/error/{num}-{msg}"
     )
-      .replace(/{(.*?)}/gi, (a, b) => this.err[b])
+      .replace(/{(.*?)}/gi, x => this.err[x])
       .replace(" ", "-"); //or: ${..}; this.err[$1] is invalid
 
     if (throwError) {

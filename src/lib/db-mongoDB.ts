@@ -1,20 +1,43 @@
 import eldeeb from "./index.js";
-import { mongoose, Schema, model } from "mongoose";
+import * as mongoose from "mongoose";
 import { generate as shortId } from "shortId";
 
 eldeeb.options.mark = "db/mongoDB";
 
-export default class db_mongoDB /* extends mongoose.constructor*/ {
+//timestamp : true = Date.now | $timestamp | (()=>number) = Date.now | {type:Date, default: timeStamp}
+type timeStamp =
+  | boolean
+  | number
+  | (() => number)
+  | { type: DateConstructor; default: number | (() => number) };
+
+interface schemaObj {
+  fields?: object;
+  agjust?: object;
+  times?: timeStamp | [timeStamp, timeStamp]; //or timestamp[] or Array<timeStamp>
+  createdAt?: timeStamp;
+  modifiedAt?: timeStamp; //todo: modifiedAt?:this.createdAt
+  [key: string]: any;
+}
+
+interface options {} //todo:
+export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
   //mongoose/lib/index.js exports new mongoose(), not the class itself; also mongoose is a Function
 
-  private promise;
+  private promise; //todo: promise: eldeeb.promise
   public connection;
   public models;
   public ext;
   public pk;
   public uri;
-  constructor(options, done?, fail?, events?) {
-    //nx: return Promise
+
+  constructor(
+    options: options,
+    done?: () => any,
+    fail?: () => any,
+    events?: any
+  ) {
+    //todo: return Promise ; events:function
     //note: if this class didn't extends mongoose, 1- don't use super() 2- use mongoose instead of this to access mongoose properties
     //when extends
     //super(options)
@@ -85,7 +108,7 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
                   options: options
                 }
               });
-            if (!options["host"]) options["host"] = "localhost"; //nx: default port
+            if (!options["host"]) options["host"] = "localhost"; //todo: default port
             // if(!("db" in options))options["db"]="database"
             this.uri = `mongodb${options.srv ? "+srv" : ""}://${this.encode(
               options["user"]
@@ -148,10 +171,10 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
           //mongoose.connect() is the default connection using .createConnection, here every instance has only one connection
 
           // https://nodejs.org/api/events.html#events_emitter_once_eventname_listener
-          //nx: needs review
-          //nx: return a promise.resolve(this,status) ,on('error',reject(e))
+          //todo: needs review
+          //todo: return a promise.resolve(this,status) ,on('error',reject(e))
         },
-        done, //nx: pass this.connection to done()
+        done, //todo: pass this.connection to done()
         fail
       );
 
@@ -199,12 +222,12 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
             ];
           if (event instanceof Array) {
             for (let i = 0; i < event.length; i++) {
-              //nx: useing var instead of let gives a wrong (i) inside function(){..}, why?
+              //todo: useing var instead of let gives a wrong (i) inside function(){..}, why?
               ev.call(this.connection, event[i], function() {
                 callback(event[i]);
               });
             }
-          } else ev.call(this.connection, event, callback); //nx: if once .once(..)
+          } else ev.call(this.connection, event, callback); //todo: if once .once(..)
         }
         return this; //chaining this function will NOT wait it to finish, so on(error,fn).on(open,fn) will work fine
       }
@@ -214,12 +237,100 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
   once(event, callback) {
     return this.on(event, callback, true);
   }
-  schema(obj, options, indexes) {
-    return new db_mongoDB_schema(obj, options, indexes); //mongoose.Schema(...)
+
+  schema(
+    obj: schemaObj | mongoose.Schema,
+    options?: object,
+    indexes?: Array<object | [object, object]> // [{fields} | [{fields},{options}] ]
+  ): mongoose.Schema {
+    return eldeeb.run("schema", () => {
+      /*
+        todo: if(options.times){
+          createdAt: { type: Date, default: Date.now },
+          modifiedAt: { type: Date, default: Date.now },
+        }
+        */
+      /*
+        adjust adds properties 'after' creating mongoose.schema (ex: statics,methode,...)
+        fields are added to obj (i.e before creating the schema)
+
+        */
+
+      obj = obj || {};
+      options = options || {}; //console.log('Options:', obj)
+      let schema: mongoose.Schema,
+        adjust = options["adjust"] || {};
+      delete options["adjust"];
+
+      if (<mongoose.Schema>obj) schema = <mongoose.Schema>obj;
+      else {
+        //if(<schemaObj>obj) or eldeeb.objectType(obj) == "object"
+        if ("fields" in options) obj = eldeeb.merge(obj, options["fields"]);
+        delete options["fields"];
+
+        if ("times" in obj && obj.times !== false) {
+          if (eldeeb.objectType(obj.times) !== "array")
+            (<[timeStamp, timeStamp]>obj.times) = [
+              <timeStamp>obj.times,
+              <timeStamp>obj.times
+            ];
+          if (!("createdAt" in obj) && obj.tomes[0] !== false) {
+            //obj.times dosen't override obj.createdAt ot obj.modifiedAt
+            // to supress createdAt: pass false to times[0] or to createdAt(deprecated)
+            obj.createdAt = {
+              type: Date,
+              default: obj.times[0] === true ? Date.now : obj.tomes[0]
+            };
+          }
+
+          if (!("modifiedAt" in obj) && obj.tomes[1] !== false) {
+            obj.modifiedAt = {
+              type: Date,
+              default: obj.times[1] === true ? Date.now : obj.tomes[1]
+            };
+          }
+
+          delete obj.times;
+        }
+
+        /*
+        deprecated! use obj.times instead of obj.createdAt & obj.modifiedAt
+        if((<schemaObj>obj).createdAt===false)delete obj.createdAt; //or pass false to times[0]
+        if(obj.modifiedAt===false)delete obj.modifiedAt;
+        */
+
+        options = eldeeb.merge({ strict: false }, options);
+        schema = new mongoose.Schema(obj, options);
+      }
+
+      if (adjust) {
+        //deeply modify obj fields, allowing to create base obj and modify it for each schema
+        for (let key in adjust) {
+          if (eldeeb.objectType(adjust[key] == "object")) {
+            for (let x in adjust[key]) {
+              schema[key][x] = adjust[key][x];
+            }
+          } else schema[key] = adjust[key];
+        }
+      }
+
+      //add indexes to schema, use this option to create indexes via autoIndex:true or model.createIndexes()
+      //to create indexes without adding them to schama: eldeeb.db().index(model,indexes,options)
+
+      if (indexes && indexes instanceof Array) {
+        for (let i = 0; i < indexes.length; i++)
+          if (indexes[i] instanceof Array)
+            schema.index(indexes[i][0], indexes[i][1]);
+          //[{fields},{options}]
+          else schema.index(indexes[i]); //{fields}
+      }
+
+      return schema;
+    });
   }
 
   db_mongoDB_model(coll, schema, options, indexes) {
-    //nx: field: anotherSchema ??
+    //todo: field: anotherSchema ??
     if (!this.connection) return { model: null, schema: null };
     return eldeeb.run(["model", schema, options], () => {
       if (typeof schema == "string") schema = require(schema) || {};
@@ -234,13 +345,13 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
       }
 
       return { model: this.connection.model(coll, schema), schema: schema }; //var {model,schema}=db.model(..); or {model:MyModel,schema:mySchema}=db.model(..) then: schema.set(..)
-      //nx: override mongoose.model
+      //todo: override mongoose.model
       //don't use $super(model) because it referce to the default connection created by mongoose.connect(), not the current connection
     });
   }
 
   createIndex(model, index, options) {
-    //nx: if(model:object)model=this.model(model); nx: directly use mongoDB
+    //todo: if(model:object)model=this.model(model); todo: directly use mongoDB
     //if schema contains indexes (schema.index()), use autoIndex:true or model.createIndexes()
     //use this function to create indexes that is not defined in the schema
     // model.collection perform native mongodb queries (not mongoose queries)
@@ -276,7 +387,7 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
     else mongoose.set(key, value);
   }
 
-  //nx: move to mongoose-model() extends mongoose.model
+  //todo: move to mongoose-model() extends mongoose.model
   select() {
     //aggregate=select([stages])
   }
@@ -299,7 +410,7 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
             initialValue: "",
             in: {
               $cond: [
-                { $eq: ["$$this", ""] }, //nx: or null
+                { $eq: ["$$this", ""] }, //todo: or null
                 "$$value",
                 { $concat: ["$$value", newString, "$$this"] }
               ]
@@ -313,86 +424,15 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
 
   implode(array, delimeter) {
     delimeter = delimeter || ",";
-    return array; //nx: return a string of elements separated by the delimeter
+    return array; //todo: return a string of elements separated by the delimeter
   }
   //----------------------- /aggregation helpers ------------------------ //
 }
 
-class db_mongoDB_model extends model {
+/*class db_mongoDB_model extends mongoose.Model {
   constructor(public coll, public schema) {
     super(coll, schema);
     return this;
-    //nx: test: this code changed from return super(..); https://stackoverflow.com/questions/26213256/ts2409-return-type-of-constructor-signature-must-be-assignable-to-the-instance
+    //todo: test: this code changed from return super(..); https://stackoverflow.com/questions/26213256/ts2409-return-type-of-constructor-signature-must-be-assignable-to-the-instance
   }
-}
-
-class db_mongoDB_schema extends Schema {
-  constructor(obj, options?, indexes?) {
-    super(); //added temporary for typescript
-    //console.log('==obj==', obj)
-    return eldeeb.run("()", () => {
-      /*
-      nx: if(options.times){
-        createdAt: { type: Date, default: Date.now },
-        modifiedAt: { type: Date, default: Date.now },
-      }
-      */
-      /*
-      adjust adds properties 'after' creating mongoose.schema (ex: statics,methode,...)
-      fields are added to obj (i.e before creating the schema)
-
-      */
-      obj = obj || {};
-      options = options || {};
-      //console.log('Options:', obj)
-      if (eldeeb.objectType(obj) == "object") {
-        if ("fields" in options) obj = eldeeb.merge(obj, options["fields"]);
-        var adjust = options["adjust"] || {};
-        delete options["fields"];
-        delete options["adjust"];
-
-        if (/*!('times' in obj) || */ obj.times === true || obj.times === 1) {
-          obj.createdAt = { type: Date, default: Date.now };
-          obj.modifiedAt = { type: Date, default: Date.now };
-          delete obj.times;
-        } else {
-          if (obj.createdAt === true || obj.createdAt === 1)
-            obj.createdAt = { type: Date, default: Date.now };
-          if (obj.modifiedAt === true || obj.modifiedAt === 1)
-            obj.modifiedAt = { type: Date, default: Date.now };
-        }
-        let defaultOptions = { strict: false };
-        options = eldeeb.merge(defaultOptions, options);
-        var schema = super(obj, options);
-      } else {
-        if (!(obj instanceof Schema)) return; //nx: add indexes & modify options
-        super();
-        var schema = obj; //nx: call super()?
-      }
-
-      if (adjust) {
-        //deeply modify obj fields, allowing to create base obj and modify it for each schema
-        for (let key in adjust) {
-          if (eldeeb.objectType(adjust[key] == "object")) {
-            for (let x in adjust[key]) {
-              schema[key][x] = adjust[key][x];
-            }
-          } else schema[key] = adjust[key];
-        }
-      }
-
-      //add indexes to schema, use this option to create indexes via autoIndex:true or model.createIndexes()
-      //to create indexes without adding them to schama: eldeeb.db().index(model,indexes,options)
-
-      if (indexes && indexes instanceof Array) {
-        for (let i = 0; i < indexes.length; i++)
-          if (indexes[i] instanceof Array)
-            schema.index(indexes[i][0], indexes[i][1]);
-          //[{fields},{options}]
-          else schema.index(indexes[i]); //{fields}
-      }
-
-      return schema;
-    });
-  }
-}
+}*/

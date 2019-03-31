@@ -1,3 +1,4 @@
+///<referce path="./error" />
 import util from "util";
 //console.log('util:', util) //using require&module.exports will prevent this line from calling when run via localhost (called when run via cmd) ,the problem is in : eldeeb/index/isArray->Symbol.iterator, adding quotes will fix it obj['Symbol.iterator'] but it will return a wrong value; may be the error is by Nuxt or babel
 export default {
@@ -12,7 +13,7 @@ export default {
     if (mode == "dev") mode = "development";
     return mode ? process.env.NODE_ENV == mode : process.env.NODE_ENV;
   },
-  run: function(mark?, promise?, fn?) {
+  run: function(mark?: any, fn?: () => any, isPromise?: boolean) {
     //nx: create function overloads
     //always use arrow function to keep "this" referce to the original function context (not "run()" context)
     //nx: mark="eldeeb:"+this.run.caller (not allowed in strict mode), https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments/callee
@@ -25,14 +26,15 @@ export default {
 
          nx: to use await pass async fn, ex: this.run(async fn(){await sleep(1); alert(1);});
     */
-    if (typeof promise == "function") {
+
+    /*if (typeof promise == "function") {
       fn = promise;
       promise = false;
     } else if (typeof mark == "function") {
       fn = mark;
       mark = "";
       //  promise=false
-    }
+    }*/
 
     if (this.options.debug) debugger;
     if (typeof fn != "function") {
@@ -47,7 +49,7 @@ export default {
       mark[0] =
         (this.options.mark != "" ? this.options.mark + "/" : "") + mark[0];
 
-    if (!promise) {
+    if (!isPromise) {
       try {
         let f = fn();
         if (mark && this.options.log) console.log("success: eldeeb:", mark, f);
@@ -56,7 +58,7 @@ export default {
         this.err(e, mark, fn);
       }
     } else {
-      promise = new Promise(fn); //fn must resolve the promise, fn(resolve,reject){if(finished)resolve(value)}
+      let promise = new Promise(fn); //fn must resolve the promise, fn(resolve,reject){if(finished)resolve(value)}
       if (mark && this.options.log)
         console.log("promise: eldeeb:", mark, promise /*, fn*/);
       return promise;
@@ -64,18 +66,20 @@ export default {
     //note that any console.log() inside fn() will appear BEFORE console.log("Success:**"), success must be at the end of try{}
     //don't concatenate mark (or other objects) to expand them to show their properties (concatenation will cast it to string)
   },
-  err: function(e, at, extra) {
+  err: function(e: any, at?: number | string, extra?: any) {
+    //todo: e:Error
     //  if (typeof at == "undefined") at = "eldeeb.js";
     console.error(
       `Error @eldeeb: ${at} ${e.name}${
         e.message ? ": " + e.message : e.description ? ": " + e.description : ""
       }\n${
         e.lineNumber ? " @" + e.lineNumber + " in" + e.fileName + "\n" : ""
-      }${e.stack ? e.stack : ""}\n->` /*, (extra ? extra : "")*/
+      }${e.stack ? e.stack : ""}\n->`,
+      extra ? extra : ""
     );
     //console.error("Error @eldeeb: " + at + "(" + e.name + "): " + e.message + " @" + (e.lineNumber || "") + ":" + (e.columnNumber || "") + " in: " + (e.fileName || "--") + " \n->", (extra ? extra : "")) //+"; by:"+(e.stack||e.description||"")
   },
-  log(obj, mark?, type?) {
+  log(obj: any, mark?: string | Array<any>, type?: string) {
     //nx: log(mark='',type='log',...obj)
     if (!this.options.log || process.env.NODE_ENV != "development") return;
     mark = mark || "";
@@ -95,46 +99,52 @@ export default {
 
     console[type](`---\n ${mark}:\n`, obj, "\n---");
   },
-  now() {
+  now(): number {
     //ms
     return Math.round(new Date().getTime());
   },
-  isArray: function(obj) {
+  isArray: function(obj: any): boolean {
     return (
       obj &&
       (obj instanceof Array ||
         (typeof obj != "string" && typeof obj[Symbol.iterator] == "function"))
     );
   },
-  inArray: function(str, arr, keepCase) {
-    return this.run(["eldeeb/inArray", str, arr, keepCase], () => {
-      if (!keepCase && typeof str == "string") str = str.toLowerCase();
+  inArray: function(
+    el: any,
+    arr: Array<any> | object | string,
+    sensitive?: boolean //case sensitive
+  ): boolean {
+    return this.run({ run: "eldeeb/inArray", el, arr, sensitive }, () => {
+      if (!sensitive && typeof el == "string") el = el.toLowerCase();
       if (this.isArray(arr)) {
-        for (var i = 0; i < arr.length; i++) {
-          if (!keepCase && typeof arr[i] == "string")
+        for (var i = 0; i < (<Array<any>>arr).length; i++) {
+          if (!sensitive && typeof arr[i] == "string")
             arr[i] = arr[i].toLowerCase();
-          if (arr[i] == str) return true;
+          if (arr[i] == el) return true;
         }
-      } else if (typeof arr == "object") return str in arr;
+      } else if (typeof arr == "object") return el in arr;
+      else if (typeof arr == "string") return arr.indexOf(el);
     });
   },
-  sleep: function(seconds) {
+  sleep: function(seconds?: number) {
     //to pause a js function make it async and use await sleep(duration);
     //ex: this.run(async fn(){await this.sleep(1); alert(1);})
     if (!seconds) seconds = 2;
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
   },
-  df: function(k, v) {
-    if (typeof k == "undefined") return v;
-    else return k;
+  //assigns a default value to a variable; if(!x)use y
+  df: function(x: any, y: any) {
+    return typeof x == "undefined" ? y : x;
   },
-  objectType: function(obj) {
+  objectType: function(obj: any): string {
     return Object.prototype.toString
       .call(obj)
       .replace("[object ", "")
       .replace("]", "")
       .toLowerCase();
     /*
+    examples:
    {} => object
    [] => array
    null => null
@@ -143,14 +153,9 @@ export default {
    "x", 'x', `x` => string
    */
   },
-  in_array: function(x, a, str) {
-    if (typeof a != "object") return;
-    for (let i = 0; i < a.length; i++) {
-      if (a[i] == x || (str && x.indexOf(a[i]) != -1)) return true;
-    }
-  },
-  isEmpty(obj) {
-    return typeof obj == "undefined" || this.in_array(obj, ["", null, [], {}]);
+
+  isEmpty(obj: any): boolean {
+    return typeof obj == "undefined" || this.inArray(obj, ["", null, [], {}]);
   },
   /*
    log:function(...msg){
@@ -163,7 +168,7 @@ export default {
     cns(...msg);
   },*/
 
-  merge(target, ...obj) {
+  merge(target: any, ...obj: any[]): any {
     //merge objects,arrays,classes (must besame type) ;
     //don't use "arguments" in an arrow functions
     return this.run(["merge", target, ...obj], function() {
@@ -187,7 +192,7 @@ export default {
       return target;
     });
   },
-  json(data) {
+  json(data: string | object) {
     if (typeof data == "string") {
       if (data.trim().charAt(0) == "{") return JSON.parse(data);
       if (
@@ -198,13 +203,20 @@ export default {
       )
         return require(data); //load a .json file
       data = require("fs").readFileSync(data);
-      return JSON.parse(data);
+      return JSON.parse(<string>data);
     } else return JSON.stringify(data);
     //nx: if(string & !start)
   },
 
+  // =======================================================================================//
   //Loading modules
-  db(type, options, done, fail, events) {
+  db(
+    type: string,
+    options: object,
+    done?: () => any,
+    fail?: () => any,
+    events?: any
+  ) {
     if (typeof type == "undefined" || type == "mongo" || type == "mongoose")
       type = "mongoDB";
     else if (this.objectType(type) == "object") {
@@ -217,17 +229,17 @@ export default {
     return new db(options, done, fail, events); //nx: if file_exists
   },
 
-  promise(fn, done?, failed?) {
+  promise(fn: () => any, done?: () => any, failed?: () => any) {
     //eldeeb = this
     let promise = require("./promise.js").default;
     return new promise(fn, done, failed);
   },
-  when(fn, done, failed) {
+  when(fn: () => any, done?: () => any, failed?: () => any) {
     return this.promise(fn, done, failed);
   },
-  error(err, throwError?: boolean, jsError?: boolean) {
-    let promise = require("./error.js").default;
-    return new promise(err, throwError, jsError);
+  error(error: Err, throwError?: boolean, jsError?: boolean) {
+    let err = require("./error.js").default;
+    return new err(err, throwError, jsError);
   },
 
   data(root) {

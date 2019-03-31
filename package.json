@@ -16,7 +16,8 @@
   },
   "devDependencies": {
     "@types/mongoose": "^5.3.24",
-    "@types/node": "^11.12.2"
+    "@types/node": "^11.12.2",
+    "@types/shortid": "0.0.29"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

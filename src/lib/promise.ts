@@ -28,29 +28,43 @@ promise.finally() is 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaSc
 
 */
 
-export default class promise extends Promise {
-  constructor(fn, done?, failed?, stop?) {
+//type FN = ((resolve?: any, reject?: any) => any) | Array<any>;
+//from: lib.es2015.promise.d.ts (in addition to Array<FN>)
+type FN = <T>(
+  resolve?: (value?: T | PromiseLike<T>) => void,
+  reject?: (reason?: any) => void
+) => void | Array<T>;
+type NEXT = ((x?: any) => any);
+
+export default class promise extends Promise<any> {
+  /*
+  why Promise<any>? check theese links
+  https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#customevent-is-now-a-generic-type
+  https://github.com/Microsoft/TypeScript/issues/21549
+  */
+  public clearTimeout: <T>(value?: T | PromiseLike<T>) => void; //same type of resolve; check this.wait()
+  constructor(fn: FN, done?: NEXT, failed?: NEXT, public $stop?: boolean) {
     //wait until fn finish excuting, fn() has to settle (resolve or reject) the promise
     //stop is used in case of a new instance is created from anoter context ex: this.wait(1) will create another instance and may like to stop the chain after resolving it
     //if fn is array of functions-> apply this.all() or: {all:[fn1,..]} because it can be any other array
-
+    super(fn); //todo: temporary for typescript
     return eldeeb.run("constructor", () => {
       if (typeof fn != "function") {
         if (eldeeb.objectType(fn) == "array") {
+          //array of functions or promises
           let tmp = fn; //don't use: fn=r=>Promise.all(fn)
           return Promise.all(tmp).then(done, failed);
         }
-        //cannot use this.all() before super()
-        else fn = r => r(fn);
+        //todo: cannot use this.all() before super()
+        //else fn = r => r(fn); //todo: what is r??
       }
-      super(fn); //===this
-      this.stop = false;
-      if (done || failed) return this.then(done, failed, stop);
+      this.$stop = false;
+      if (done || failed) return this.then(done, failed, $stop);
 
       return this; //don't return promise to enable chaining for other (non-promise) functions such as done() and to customise then
     });
   }
-  when(fn, done, failed, stop) {
+  when(fn: FN, done?: NEXT, failed?: NEXT, stop?: boolean) {
     return new promise(fn, done, failed, stop);
 
     /*
@@ -61,7 +75,12 @@ export default class promise extends Promise {
     */
   }
 
-  wait(seconds, done, failed, stop) {
+  wait(
+    seconds: number | (() => number),
+    done?: NEXT,
+    fail?: NEXT,
+    stop?: boolean
+  ) {
     //pause the script & pass a timeout object to the next .then() (contains: seconds) https://nodejs.org/api/timers.html#timers_class_timeout
     //to canxel it: clearTimeout(timeout)
     if (typeof seconds == "function") seconds = seconds();
@@ -70,15 +89,16 @@ export default class promise extends Promise {
       //https://stackoverflow.com/questions/53237418/javascript-promise-a-problem-with-settimeout-inside-a-promise-race
       return this.then(() =>
         this.when(
+          //todo: why using .when() inside .then()
           resolve => {
             this.clearTimeout = resolve; //to stop it from outside  or this.clearTimeout(timeout)
             let timeout = setTimeout(function() {
-              timeout.seconds = seconds; //=(timeout._idleTimeout)/1000
+              timeout.seconds = seconds; //=(timeout._idleTimeout)/1000 ;todo: TS forcind adding new property to an object
               resolve(timeout); //returning "timeout" will immediatley call the next .then(), and using resolve(timeout) will orevent the next .then() from using it untill it finished
-            }, seconds * 1000);
+            }, <number>seconds * 1000);
           },
           done,
-          failed,
+          fail,
           stop
         )
       );
@@ -107,12 +127,12 @@ export default class promise extends Promise {
     })*/
   }
 
-  then(done, fail, stop) {
+  then(done?: NEXT, fail?: NEXT, stop?: boolean) {
     //nx: if the promise not settled call this.resolve()
     // nx: if (eldeeb.objectType(fn) == 'object' &&fn.then &&typeof obj.then == 'function') {//thenable object}
-    if (!this.stop) {
-      if (stop) this.stopx(); //for the next .then();
-      let tmp;
+    if (!this.$stop) {
+      if (stop) this.stop(); //for the next .then();
+      let tmp: NEXT;
       if (
         done !== null &&
         typeof done != "undefined" &&
@@ -139,13 +159,13 @@ export default class promise extends Promise {
     return this;
   }
 
-  done(fn, stop) {
-    return this.then(fn, null, typeof stop == "undefined" ? true : false); //default:stop=true
+  done(done: NEXT, stop?: boolean) {
+    return this.then(done, null, typeof stop == "undefined" ? true : false); //default:stop=true
   }
 
-  fail(fn, stop) {
+  fail(fail: NEXT, stop?: boolean) {
     //same as catch() but eits the chain by default
-    return this.then(null, fn, typeof stop == "undefined" ? true : false);
+    return this.then(null, fail, typeof stop == "undefined" ? true : false);
   }
 
   /*catch(fn, stop) {
@@ -154,31 +174,33 @@ export default class promise extends Promise {
     return this.then(null, fn, stop)
   }*/
 
-  stopx() {
-    //nx: change it's name to stop()
+  stop() {
     //exit the current chain, i.e don't run the next functions; to resume the chain: set this.stop=false or create a new promise instance, but dont make a new chain ex: p.stop().then(..)  p.then(..)
-    this.stop = true;
+    this.$stop = true;
     return this;
   }
 
-  complete(fn, done, fail) {
-    return this.then(fn, fn, typeof stop == "undefined" ? true : false);
+  complete(fn: NEXT, done?: NEXT, fail?: NEXT) {
     //=finally() but default value of stop=true
+    //return this.then(fn, done, fail, typeof stop == "undefined" ? true : false);
+    this.stop(); //todo: test if this line must be after this.finally()
+    return this.finally(fn, done, fail);
   }
 
-  finally(fn, done, fail) {
-    //temporary until finally oficially released, now promise.finally still in 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally
-    return this.then(fn, fn).then(done, fail);
+  finally(fn: NEXT, done?: NEXT, fail?: NEXT) {
+    //here fn is NEXT not FN, because it will be escecuted inside .then() i.e as done not as an executor function
+    //return this.then(fn).then(done, fail);  //temporary until finally oficially released, now promise.finally still in 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally
+    return this.finally(fn).then(done, fail);
   }
 
-  limit(seconds, ...fn) {
+  limit(seconds: number, ...fn: Array<() => any>) {
     //nx: test this function by loading a big resource via ajax or reading a big file
     //nx: limit(1000).then().then() //or .exec()
     //max time limit for excuting fn()
     return eldeeb.run("limit", () => {
       return Promise.race([
         new Promise(
-          (resolve, reject) =>
+          reject =>
             setTimeout(
               () => reject(new Error("request timeout")),
               seconds * 1000
@@ -190,8 +212,8 @@ export default class promise extends Promise {
   }
 
   //###### static methods: race,all,reject,resolve; use Promice.race() not this.promise.race
-  all(promises, done, fail) {
-    if (!eldeeb.isArray(promises)) return this; //nx: or any iterable ->see eldeeb.isArray()
+  all(promises: Array<any>, done?: NEXT, fail?: NEXT) {
+    //if (!eldeeb.isArray(promises)) return this; //nx: or any iterable ->see eldeeb.isArray()
     return this.then(() => Promise.all(promises)).then(done, fail);
     //done() accept array of arguments, one for each promise
     /*
@@ -202,21 +224,21 @@ export default class promise extends Promise {
       */
   }
 
-  race(promises, done, fail) {
+  race(promises: Array<any>, done?: NEXT, fail?: NEXT) {
     //typically same as .all()
     if (!eldeeb.isArray(promises)) return this;
     return this.then(() => Promise.race(promises)).then(done, fail);
   }
 
-  resolve(value, seconds) {
+  resolve(value?: any, seconds?: number) {
     if (seconds) return this.wait(seconds).resolve(value);
     Promise.resolve(value);
     return this;
   }
 
-  reject(error, seconds) {
+  reject(error?: any, seconds?: number) {
     if (seconds) return this.wait(seconds).reject(error);
-    Promise.reject(value);
+    Promise.reject(error);
     return this;
   }
 }
