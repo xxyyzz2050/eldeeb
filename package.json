@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "directories": {
-    "lib": "lib",
-    "test": "test"
+    "lib": "dist/lib",
+    "test": "test",
+    "example": "examples"
   },
+  "types": "index.d.ts",
   "dependencies": {
     "mongoose": "^5.3.13",
     "mongodb": "^3.1.10",
