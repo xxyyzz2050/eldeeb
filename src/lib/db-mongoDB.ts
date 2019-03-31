@@ -1,7 +1,5 @@
 import eldeeb from "./index.js";
-import mongoose from "mongoose";
-import schema from "./db-mongoDB-schema.js";
-import model from "./db-mongoDB-Model.js";
+import { mongoose, Schema, model } from "mongoose";
 import { generate as shortId } from "shortId";
 
 eldeeb.options.mark = "db/mongoDB";
@@ -217,10 +215,10 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
     return this.on(event, callback, true);
   }
   schema(obj, options, indexes) {
-    return new schema(obj, options, indexes); //mongoose.Schema(...)
+    return new db_mongoDB_schema(obj, options, indexes); //mongoose.Schema(...)
   }
 
-  model(coll, schema, options, indexes) {
+  db_mongoDB_model(coll, schema, options, indexes) {
     //nx: field: anotherSchema ??
     if (!this.connection) return { model: null, schema: null };
     return eldeeb.run(["model", schema, options], () => {
@@ -318,4 +316,83 @@ export default class db_mongoDB /* extends mongoose.constructor*/ {
     return array; //nx: return a string of elements separated by the delimeter
   }
   //----------------------- /aggregation helpers ------------------------ //
+}
+
+class db_mongoDB_model extends model {
+  constructor(public coll, public schema) {
+    super(coll, schema);
+    return this;
+    //nx: test: this code changed from return super(..); https://stackoverflow.com/questions/26213256/ts2409-return-type-of-constructor-signature-must-be-assignable-to-the-instance
+  }
+}
+
+class db_mongoDB_schema extends Schema {
+  constructor(obj, options, indexes) {
+    super(); //added temporary for typescript
+    //console.log('==obj==', obj)
+    return eldeeb.run("()", () => {
+      /*
+      nx: if(options.times){
+        createdAt: { type: Date, default: Date.now },
+        modifiedAt: { type: Date, default: Date.now },
+      }
+      */
+      /*
+      adjust adds properties 'after' creating mongoose.schema (ex: statics,methode,...)
+      fields are added to obj (i.e before creating the schema)
+
+      */
+      obj = obj || {};
+      options = options || {};
+      //console.log('Options:', obj)
+      if (eldeeb.objectType(obj) == "object") {
+        if ("fields" in options) obj = eldeeb.merge(obj, options["fields"]);
+        var adjust = options["adjust"] || {};
+        delete options["fields"];
+        delete options["adjust"];
+
+        if (/*!('times' in obj) || */ obj.times === true || obj.times === 1) {
+          obj.createdAt = { type: Date, default: Date.now };
+          obj.modifiedAt = { type: Date, default: Date.now };
+          delete obj.times;
+        } else {
+          if (obj.createdAt === true || obj.createdAt === 1)
+            obj.createdAt = { type: Date, default: Date.now };
+          if (obj.modifiedAt === true || obj.modifiedAt === 1)
+            obj.modifiedAt = { type: Date, default: Date.now };
+        }
+        let defaultOptions = { strict: false };
+        options = eldeeb.merge(defaultOptions, options);
+        var schema = super(obj, options);
+      } else {
+        if (!(obj instanceof Schema)) return; //nx: add indexes & modify options
+        super();
+        var schema = obj; //nx: call super()?
+      }
+
+      if (adjust) {
+        //deeply modify obj fields, allowing to create base obj and modify it for each schema
+        for (let key in adjust) {
+          if (eldeeb.objectType(adjust[key] == "object")) {
+            for (let x in adjust[key]) {
+              schema[key][x] = adjust[key][x];
+            }
+          } else schema[key] = adjust[key];
+        }
+      }
+
+      //add indexes to schema, use this option to create indexes via autoIndex:true or model.createIndexes()
+      //to create indexes without adding them to schama: eldeeb.db().index(model,indexes,options)
+
+      if (indexes && indexes instanceof Array) {
+        for (let i = 0; i < indexes.length; i++)
+          if (indexes[i] instanceof Array)
+            schema.index(indexes[i][0], indexes[i][1]);
+          //[{fields},{options}]
+          else schema.index(indexes[i]); //{fields}
+      }
+
+      return schema;
+    });
+  }
 }

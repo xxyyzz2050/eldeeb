@@ -12,7 +12,6 @@
     "baseUrl": ".",
     "locale": "en",
     "declaration": true,
-    "declarationDir": "dist/declarations",
     "strict": false,
     "watch": true,
     "paths": {
