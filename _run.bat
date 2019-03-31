@@ -1,1 +1,1 @@
-call node test/db.js
+call tsc --outDir dest
