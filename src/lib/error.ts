@@ -6,14 +6,14 @@ eldeeb.options.mark = "error";
 - wrong: throw new Error() from this file, will include file & lineNumber of this file (not the file witch throw the error), so we have to get the correct file,lineNumber
 
 */
-interface ErrObj {
+export interface ErrObj {
   num?: number;
   type?: string;
   msg?: string;
   link?: string;
   details?: any;
 }
-type Err = number | Array<any> | ErrObj | (() => Err);
+export type Err = number | Array<any> | ErrObj | (() => Err);
 export default function(err: Err, throwError?: boolean, jsError?: boolean) {
   //or: class error extends Error -> to add trace to error info (returns only Error object, not object)
   let errors = {

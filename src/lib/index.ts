@@ -1,5 +1,10 @@
-///<referce path="./error" />
 import util from "util";
+
+//todo: dynamically import types
+//todo: export * as promiseTypes from "./promise"; in draft mode: https://github.com/leebyron/ecmascript-more-export-from#proposed-additions
+import * as promiseTypes from "./promise";
+import * as errorTypes from "./error";
+
 //console.log('util:', util) //using require&module.exports will prevent this line from calling when run via localhost (called when run via cmd) ,the problem is in : eldeeb/index/isArray->Symbol.iterator, adding quotes will fix it obj['Symbol.iterator'] but it will return a wrong value; may be the error is by Nuxt or babel
 export default {
   options: {
@@ -9,6 +14,9 @@ export default {
     debug: false,
     mark: "" //mark prefix
   },
+  promiseTypes, //or types: { promiseTypes, errorTypes },
+  errorTypes,
+
   mode(mode: string) {
     if (mode == "dev") mode = "development";
     return mode ? process.env.NODE_ENV == mode : process.env.NODE_ENV;
@@ -229,7 +237,11 @@ export default {
     return new db(options, done, fail, events); //nx: if file_exists
   },
 
-  promise(fn: () => any, done?: () => any, failed?: () => any) {
+  promise(
+    fn: promiseTypes.FN,
+    done?: promiseTypes.NEXT,
+    failed?: promiseTypes.NEXT
+  ) {
     //eldeeb = this
     let promise = require("./promise.js").default;
     return new promise(fn, done, failed);
@@ -237,12 +249,12 @@ export default {
   when(fn: () => any, done?: () => any, failed?: () => any) {
     return this.promise(fn, done, failed);
   },
-  error(error: Err, throwError?: boolean, jsError?: boolean) {
+  error(error: errorTypes.Err, throwError?: boolean, jsError?: boolean) {
     let err = require("./error.js").default;
-    return new err(err, throwError, jsError);
+    return new err(error, throwError, jsError);
   },
 
-  data(root) {
+  data(root: string) {
     let data = require("./data.js").default;
     return new data(root);
   }

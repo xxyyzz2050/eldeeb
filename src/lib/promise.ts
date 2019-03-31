@@ -30,11 +30,11 @@ promise.finally() is 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaSc
 
 //type FN = ((resolve?: any, reject?: any) => any) | Array<any>;
 //from: lib.es2015.promise.d.ts (in addition to Array<FN>)
-type FN = <T>(
+export type FN = <T>(
   resolve?: (value?: T | PromiseLike<T>) => void,
   reject?: (reason?: any) => void
 ) => void | Array<T>;
-type NEXT = ((x?: any) => any);
+export type NEXT = ((x?: any) => any);
 
 export default class promise extends Promise<any> {
   /*

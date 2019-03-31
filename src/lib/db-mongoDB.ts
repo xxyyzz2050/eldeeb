@@ -21,6 +21,7 @@ interface schemaObj {
 }
 
 interface options {} //todo:
+
 export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
   //mongoose/lib/index.js exports new mongoose(), not the class itself; also mongoose is a Function
 
@@ -33,8 +34,8 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
 
   constructor(
     options: options,
-    done?: () => any,
-    fail?: () => any,
+    done?: eldeeb.promiseTypes.NEXT,
+    fail?: eldeeb.promiseTypes.NEXT,
     events?: any
   ) {
     //todo: return Promise ; events:function
