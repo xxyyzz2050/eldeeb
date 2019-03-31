@@ -1,1 +1,2 @@
-call tsc --outDir dest
+call tsc
+::call tsc --outDir dist
