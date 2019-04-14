@@ -1,5 +1,10 @@
-import eldeeb from "./index.js";
-eldeeb.options.mark = "promise";
+import $eldeeb from "./index.js";
+
+let eldeeb = new $eldeeb({
+  mark: "promise"
+});
+//or: eldeeb.options.mark = "promise";
+
 /*
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 

@@ -1,7 +1,10 @@
-import eldeeb from "./index.js";
 import fs from "fs";
 import Path from "path";
+import $eldeeb from "./index.js";
 
+let eldeeb = new $eldeeb({
+  mark: "data"
+});
 export default class data {
   root: string;
   constructor(root) {

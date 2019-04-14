@@ -1,16 +1,16 @@
 import util from "util";
 
-//todo: convert from object to class (for typeScript)
+//todo: convert from plain object to class to use TypeScript  features, other codes must instance it i.e: new eldeeb(options)
 //todo: dynamically import types
 //todo: export * as promiseTypes from "./promise"; in draft mode: https://github.com/leebyron/ecmascript-more-export-from#proposed-additions
 import * as promiseTypes from "./promise";
 import * as errorTypes from "./error";
 
 type TypeOptions = {
-  log: boolean;
-  debug: boolean;
-  minLogLevel: string;
-  mark: string;
+  log?: boolean; //log some events to the console
+  debug?: boolean; //add 'debugger' mark
+  minLogLevel?: string;
+  mark?: string; //the child class of this class ex: promise,files,...
 };
 
 //console.log('util:', util) //using require&module.exports will prevent this line from calling when run via localhost (called when run via cmd) ,the problem is in : eldeeb/index/isArray->Symbol.iterator, adding quotes will fix it obj['Symbol.iterator'] but it will return a wrong value; may be the error is by Nuxt or babel

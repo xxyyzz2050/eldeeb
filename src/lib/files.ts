@@ -1,7 +1,10 @@
-import eldeeb from "./index.js";
+import $eldeeb from "./index.js";
 import fs from "fs";
 import Path from "path";
-eldeeb.options.mark = "files";
+
+let eldeeb = new $eldeeb({
+  mark: "files"
+});
 export default class data {
   //TODO: move file operates from Data.js to here
 

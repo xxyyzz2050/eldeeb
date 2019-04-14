@@ -1,8 +1,10 @@
-import eldeeb from "./index.js";
 import * as mongoose from "mongoose";
 import { generate as shortId } from "shortId";
+import $eldeeb from "./index.js";
 
-eldeeb.options.mark = "db/mongoDB";
+let eldeeb = new $eldeeb({
+  mark: "db/mongoDB"
+});
 
 //timestamp : true = Date.now | $timestamp | (()=>number) = Date.now | {type:Date, default: timeStamp}
 type timeStamp =
