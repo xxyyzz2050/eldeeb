@@ -176,6 +176,7 @@ export default class promise extends Promise<any> {
 
   stop() {
     //exit the current chain, i.e don't run the next functions; to resume the chain: set this.stop=false or create a new promise instance, but dont make a new chain ex: p.stop().then(..)  p.then(..)
+    //ex: p.then(()=>if(true)p.stop()).then(..)
     this.$stop = true;
     return this;
   }

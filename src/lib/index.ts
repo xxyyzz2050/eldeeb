@@ -218,6 +218,7 @@ export default {
 
   // =======================================================================================//
   //Loading modules
+
   db(
     type: string,
     options: object,
@@ -227,12 +228,14 @@ export default {
   ) {
     if (typeof type == "undefined" || type == "mongo" || type == "mongoose")
       type = "mongoDB";
+    /*
+    todo: swipe arguments; create overload functions
     else if (this.objectType(type) == "object") {
       fail = done;
       done = options;
       options = type;
       type = "mongoDB";
-    }
+    }*/
     let db = require(`./db-${type}.js`).default;
     return new db(options, done, fail, events); //nx: if file_exists
   },
