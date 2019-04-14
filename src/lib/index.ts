@@ -1,5 +1,6 @@
 import util from "util";
 
+//todo: convert from object to class (for typeScript)
 //todo: dynamically import types
 //todo: export * as promiseTypes from "./promise"; in draft mode: https://github.com/leebyron/ecmascript-more-export-from#proposed-additions
 import * as promiseTypes from "./promise";

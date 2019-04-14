@@ -32,11 +32,17 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
   public pk;
   public uri;
 
+  //tmp: for test
+  public test:  eldeeb;
+  public test2: typeof eldeeb;
+  public test3: typeof eldeeb.promiseTypes.NEXT;
+
   constructor(
     options: options,
-    done?: eldeeb.promiseTypes.NEXT,
+    done?:  eldeeb.promiseTypes.NEXT,
     fail?: eldeeb.promiseTypes.NEXT,
-    events?: any
+    events?: any,
+    test: eldeeb; //tmp for test
   ) {
     //todo: return Promise ; events:function
     //note: if this class didn't extends mongoose, 1- don't use super() 2- use mongoose instead of this to access mongoose properties

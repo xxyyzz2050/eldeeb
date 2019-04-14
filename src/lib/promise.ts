@@ -29,11 +29,11 @@ promise.finally() is 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaSc
 */
 
 //type FN = ((resolve?: any, reject?: any) => any) | Array<any>;
-//from: lib.es2015.promise.d.ts (in addition to Array<FN>)
+//from: lib.es2015.promise.d.ts (but it also returns void | Array of race functions)
 export type FN = <T>(
   resolve?: (value?: T | PromiseLike<T>) => void,
   reject?: (reason?: any) => void
-) => void | Array<T>;
+) => Promise<T> | void | Array<T>;
 export type NEXT = ((x?: any) => any);
 
 export default class promise extends Promise<any> {
@@ -42,7 +42,7 @@ export default class promise extends Promise<any> {
   https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#customevent-is-now-a-generic-type
   https://github.com/Microsoft/TypeScript/issues/21549
   */
-  public clearTimeout: <T>(value?: T | PromiseLike<T>) => void; //same type of resolve; check this.wait()
+  public clearTimeout: <T>(value?: T | PromiseLike<T>) => void; //same type of resolve; check this.wait(); //todo: remove from class properties, move scope to .wait()
   constructor(fn: FN, done?: NEXT, failed?: NEXT, public $stop?: boolean) {
     //wait until fn finish excuting, fn() has to settle (resolve or reject) the promise
     //stop is used in case of a new instance is created from anoter context ex: this.wait(1) will create another instance and may like to stop the chain after resolving it
@@ -88,6 +88,7 @@ export default class promise extends Promise<any> {
     return eldeeb.run(["wait", seconds], () => {
       //https://stackoverflow.com/questions/53237418/javascript-promise-a-problem-with-settimeout-inside-a-promise-race
       return this.then(() =>
+        //todo: is it necessary to run .when() inside .then()? i.e remove .then()
         this.when(
           //todo: why using .when() inside .then()
           resolve => {
