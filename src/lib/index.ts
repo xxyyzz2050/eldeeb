@@ -1,10 +1,29 @@
+/*
+todo:
+- transpiler to auto inject eldeeb.run(), using notation @eldeeb.run()
+- run(): auto get function name & arguments list,
+- run(): mark may be object: arguments -> if(mark:obj && mark.collee)mark={run:mark/mark.callee.name,...arguments}
+*/
+
 import util from "util";
+
+export type FN = import("./promise").FN; //https://stackoverflow.com/a/52115295; export type FN=...
+export type NEXT = import("./promise").NEXT;
+export type ERROR = import("./error").Err;
+
+/*
+//todo: the problem is that typescript types are not available in runtime (i.e JS code), so we cannot use it as a value or a plain obj property
+export const types = {
+  //or move it inside the class as a class property
+  promise: {
+    FN: (import("./promise") as any).FN, //why "as any" removed the error?; test:types.promise.FN -> cannot find namespace types
+    NEXT: import("./promise").NEXT
+  },
+  ERROR: import("./error").Err
+};*/
 
 //todo: convert from plain object to class to use TypeScript  features, other codes must instance it i.e: new eldeeb(options)
 //todo: dynamically import types
-//todo: export * as promiseTypes from "./promise"; in draft mode: https://github.com/leebyron/ecmascript-more-export-from#proposed-additions
-import * as promiseTypes from "./promise";
-import * as errorTypes from "./error";
 
 type TypeOptions = {
   log?: boolean; //log some events to the console
@@ -15,9 +34,6 @@ type TypeOptions = {
 
 //console.log('util:', util) //using require&module.exports will prevent this line from calling when run via localhost (called when run via cmd) ,the problem is in : eldeeb/index/isArray->Symbol.iterator, adding quotes will fix it obj['Symbol.iterator'] but it will return a wrong value; may be the error is by Nuxt or babel
 export default class {
-  public promiseTypes; //or types: { promiseTypes, errorTypes }, //todo: auto export declared types
-  public errorTypes;
-
   constructor(public options: TypeOptions) {
     let defaultOptions: TypeOptions = {
       log: false, //nx: min log level
@@ -37,7 +53,7 @@ todo: what is the usage of this function?
     // or: return mode ? mode=="dev"?"development":process.env.NODE_ENV:undefined;
   }*/
 
-  run(mark?: any, fn?: () => any, isPromise?: boolean) {
+  run(mark?: any, fn?: () => any, isPromise?: boolean): any {
     //nx: create function overloads
     //always use arrow function to keep "this" referce to the original function context (not "run()" context)
     //nx: mark="eldeeb:"+this.run.caller (not allowed in strict mode), https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments/callee
@@ -72,6 +88,9 @@ todo: what is the usage of this function?
     else if (mark instanceof Array)
       mark[0] =
         (this.options.mark != "" ? this.options.mark + "/" : "") + mark[0];
+    else if (this.objectType(mark) == "object" && mark.run)
+      mark.run =
+        (this.options.mark != "" ? this.options.mark + "/" : "") + mark.run;
 
     if (!isPromise) {
       try {
@@ -91,7 +110,7 @@ todo: what is the usage of this function?
     //don't concatenate mark (or other objects) to expand them to show their properties (concatenation will cast it to string)
   }
 
-  err(e: any, at?: number | string, extra?: any) {
+  err(e: any, at?: number | string, extra?: any): void {
     //todo: e:Error
     //  if (typeof at == "undefined") at = "eldeeb.js";
     console.error(
@@ -105,7 +124,7 @@ todo: what is the usage of this function?
     //console.error("Error @eldeeb: " + at + "(" + e.name + "): " + e.message + " @" + (e.lineNumber || "") + ":" + (e.columnNumber || "") + " in: " + (e.fileName || "--") + " \n->", (extra ? extra : "")) //+"; by:"+(e.stack||e.description||"")
   }
 
-  log(obj: any, mark?: string | Array<any>, type?: string) {
+  log(obj: any, mark?: string | Array<any>, type?: string): void {
     //nx: log(mark='',type='log',...obj)
     if (!this.options.log || process.env.NODE_ENV != "development") return;
     mark = mark || "";
@@ -157,7 +176,8 @@ todo: what is the usage of this function?
     });
   }
 
-  sleep(seconds?: number) {
+  sleep(seconds?: number) /*: Promise<number>*/ {
+    //todo: return type: Promise<T???>
     //to pause a js function make it async and use await sleep(duration);
     //ex: this.run(async fn(){await this.sleep(1); alert(1);})
     if (!seconds) seconds = 2;
@@ -165,7 +185,9 @@ todo: what is the usage of this function?
   }
 
   //assigns a default value to a variable; if(!x)use y
-  df(x: any, y: any) {
+  //or: df<A,B>(x:A,y:B):A|B
+  df(x: any, y: any): typeof x | typeof y {
+    //todo: test if it works (i.e it capures the typeof x,y not use 'any'), try df(1,2){return "string"}
     return typeof x == "undefined" ? y : x;
   }
 
@@ -266,11 +288,7 @@ todo: what is the usage of this function?
     return new db(options, done, fail, events); //nx: if file_exists
   }
 
-  promise(
-    fn: promiseTypes.FN,
-    done?: promiseTypes.NEXT,
-    failed?: promiseTypes.NEXT
-  ) {
+  promise(fn: FN, done?: NEXT, failed?: NEXT) {
     //eldeeb = this
     let promise = require("./promise.js").default;
     return new promise(fn, done, failed);
@@ -280,7 +298,7 @@ todo: what is the usage of this function?
     return this.promise(fn, done, failed);
   }
 
-  error(error: errorTypes.Err, throwError?: boolean, jsError?: boolean) {
+  error(error: ERROR, throwError?: boolean, jsError?: boolean) {
     let err = require("./error.js").default;
     return new err(error, throwError, jsError);
   }

@@ -1,3 +1,7 @@
+/*
+import x=require(); for types only http://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
+*/
+
 import $eldeeb from "./index.js";
 
 let eldeeb = new $eldeeb({
@@ -36,12 +40,14 @@ promise.finally() is 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaSc
 //type FN = ((resolve?: any, reject?: any) => any) | Array<any>;
 //from: lib.es2015.promise.d.ts (but it also returns void | Array of race functions)
 export type FN = <T>(
-  resolve?: (value?: T | PromiseLike<T>) => void,
+  resolve?: RESOLVE<T>,
   reject?: (reason?: any) => void
 ) => Promise<T> | void | Array<T>;
+export type RESOLVE<T> = (value?: T | PromiseLike<T>) => void;
 export type NEXT = ((x?: any) => any);
 
 export default class promise extends Promise<any> {
+  //todo: class promise<T> extends Promise<T>
   /*
   why Promise<any>? check theese links
   https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#customevent-is-now-a-generic-type
@@ -53,7 +59,7 @@ export default class promise extends Promise<any> {
     //stop is used in case of a new instance is created from anoter context ex: this.wait(1) will create another instance and may like to stop the chain after resolving it
     //if fn is array of functions-> apply this.all() or: {all:[fn1,..]} because it can be any other array
     super(fn); //todo: temporary for typescript
-    return eldeeb.run("constructor", () => {
+    return eldeeb.run({ run: "{}", ...arguments }, () => {
       if (typeof fn != "function") {
         if (eldeeb.objectType(fn) == "array") {
           //array of functions or promises
@@ -86,83 +92,87 @@ export default class promise extends Promise<any> {
     fail?: NEXT,
     stop?: boolean
   ) {
-    //pause the script & pass a timeout object to the next .then() (contains: seconds) https://nodejs.org/api/timers.html#timers_class_timeout
-    //to canxel it: clearTimeout(timeout)
-    if (typeof seconds == "function") seconds = seconds();
-    else if (typeof seconds != "number") seconds = 0;
-    return eldeeb.run(["wait", seconds], () => {
-      //https://stackoverflow.com/questions/53237418/javascript-promise-a-problem-with-settimeout-inside-a-promise-race
-      return this.then(() =>
-        //todo: is it necessary to run .when() inside .then()? i.e remove .then()
-        this.when(
-          //todo: why using .when() inside .then()
-          resolve => {
-            this.clearTimeout = resolve; //to stop it from outside  or this.clearTimeout(timeout)
-            let timeout = setTimeout(function() {
-              timeout.seconds = seconds; //=(timeout._idleTimeout)/1000 ;todo: TS forcind adding new property to an object
-              resolve(timeout); //returning "timeout" will immediatley call the next .then(), and using resolve(timeout) will orevent the next .then() from using it untill it finished
-            }, <number>seconds * 1000);
-          },
-          done,
-          fail,
-          stop
-        )
-      );
+    return eldeeb.run({ run: "wait", ...arguments }, () => {
+      //pause the script & pass a timeout object to the next .then() (contains: seconds) https://nodejs.org/api/timers.html#timers_class_timeout
+      //to canxel it: clearTimeout(timeout)
+      if (typeof seconds == "function") seconds = seconds();
+      else if (typeof seconds != "number") seconds = 0;
+      return eldeeb.run(["wait", seconds], () => {
+        //https://stackoverflow.com/questions/53237418/javascript-promise-a-problem-with-settimeout-inside-a-promise-race
+        return this.then(() =>
+          //todo: is it necessary to run .when() inside .then()? i.e remove .then()
+          this.when(
+            //todo: why using .when() inside .then()
+            resolve => {
+              this.clearTimeout = resolve; //to stop it from outside  or this.clearTimeout(timeout)
+              let timeout = setTimeout(function() {
+                timeout.seconds = seconds; //=(timeout._idleTimeout)/1000 ;todo: allow typeScript to add new property to an object, or extend the object difinition (modifing difinition is not available)
+                resolve(timeout); //returning "timeout" will immediatley call the next .then(), and using resolve(timeout) will orevent the next .then() from using it untill it finished
+              }, <number>seconds * 1000);
+            },
+            done,
+            fail,
+            stop
+          )
+        );
+      });
+
+      /*resolve=>{
+          let timeout =setTimeout(resolve, seconds * 1000)
+          timeout.seconds = seconds
+          return timeout //wrong, this will return before setTimeout finish
+
+
+          resolve=>setTimeout(resolve,seconds*1000,seconds) //it works, but how to pass timeout instead of seconds
+          resolved=>{var timeout=setTimeout(...,timeout)} also failed
+        }*/
+
+      //nx: pass timeout insteadof seconds or [{timeout object},seconds] to control the timeout (ex: clearTimeout), note that Promise.resolve() occepts only one parameter ,so the second parameter (4th argument) of setTimeout() will be ignored [Solved by defining timeout]
+      //nx: this function immediatly returns seconds then wait until setTimeout finished
+      //or: ()=>{setTimeout(fn(){}) return seconds}
+      //or: return timeout id to control it (clearTimeOut(id))
+
+      /*
+       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+        return eldeeb.run('delay', false, () => {
+          //don't return a promise, return a function, because when() accepts a function
+          return new Promise(resolve => setTimeout(resolve, seconds * 1000))
+        })*/
     });
-
-    /*resolve=>{
-      let timeout =setTimeout(resolve, seconds * 1000)
-      timeout.seconds = seconds
-      return timeout //wrong, this will return before setTimeout finish
-
-
-      resolve=>setTimeout(resolve,seconds*1000,seconds) //it works, but how to pass timeout instead of seconds
-      resolved=>{var timeout=setTimeout(...,timeout)} also failed
-    }*/
-
-    //nx: pass timeout insteadof seconds or [{timeout object},seconds] to control the timeout (ex: clearTimeout), note that Promise.resolve() occepts only one parameter ,so the second parameter (4th argument) of setTimeout() will be ignored [Solved by defining timeout]
-    //nx: this function immediatly returns seconds then wait until setTimeout finished
-    //or: ()=>{setTimeout(fn(){}) return seconds}
-    //or: return timeout id to control it (clearTimeOut(id))
-
-    /*
-   //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
-    return eldeeb.run('delay', false, () => {
-      //don't return a promise, return a function, because when() accepts a function
-      return new Promise(resolve => setTimeout(resolve, seconds * 1000))
-    })*/
   }
 
   then(done?: NEXT, fail?: NEXT, stop?: boolean) {
-    //nx: if the promise not settled call this.resolve()
-    // nx: if (eldeeb.objectType(fn) == 'object' &&fn.then &&typeof obj.then == 'function') {//thenable object}
-    if (!this.$stop) {
-      if (stop) this.stop(); //for the next .then();
-      let tmp: NEXT;
-      if (
-        done !== null &&
-        typeof done != "undefined" &&
-        typeof done != "function"
-      ) {
-        //if done=null don't do anything, just pass the promise to the next .then(), else return the value passed to it
-        tmp = done;
-        done = () => tmp; //or done=()=>Promise.resolve(done) ; we return the value (or resolve it) to pass it to the next then() as a parameter
-        // don't use the same name i.e done=()=>done this copy 'done' by reference, so it will always pass a function (()=>x) to the next .then()
+    return eldeeb.run({ run: "then", ...arguments }, async () => {
+      //nx: if the promise not settled call this.resolve()
+      // nx: if (eldeeb.objectType(fn) == 'object' &&fn.then &&typeof obj.then == 'function') {//thenable object}
+      if (!this.$stop) {
+        if (stop) this.stop(); //for the next .then();
+        let tmp: NEXT;
+        if (
+          done !== null &&
+          typeof done != "undefined" &&
+          typeof done != "function"
+        ) {
+          //if done=null don't do anything, just pass the promise to the next .then(), else return the value passed to it
+          tmp = done;
+          done = () => tmp; //or done=()=>Promise.resolve(done) ; we return the value (or resolve it) to pass it to the next then() as a parameter
+          // don't use the same name i.e done=()=>done this copy 'done' by reference, so it will always pass a function (()=>x) to the next .then()
+        }
+        if (
+          fail !== null &&
+          typeof fail != "undefined" &&
+          typeof fail != "function"
+        ) {
+          tmp = fail;
+          fail = () => tmp;
+        }
+        //return this.when(done, fail, false, true)
+        //console.log('done:', done)
+        //console.log('fail:', fail)
+        return super.then(done, fail); //nx: how to return this as a new promise??
       }
-      if (
-        fail !== null &&
-        typeof fail != "undefined" &&
-        typeof fail != "function"
-      ) {
-        tmp = fail;
-        fail = () => tmp;
-      }
-      //return this.when(done, fail, false, true)
-      //console.log('done:', done)
-      //console.log('fail:', fail)
-      return super.then(done, fail); //nx: how to return this as a new promise??
-    }
-    return this;
+      return this;
+    });
   }
 
   done(done: NEXT, stop?: boolean) {
@@ -204,7 +214,7 @@ export default class promise extends Promise<any> {
     //nx: test this function by loading a big resource via ajax or reading a big file
     //nx: limit(1000).then().then() //or .exec()
     //max time limit for excuting fn()
-    return eldeeb.run("limit", () => {
+    return eldeeb.run({ run: "limit", ...arguments }, () => {
       return Promise.race([
         new Promise(
           reject =>
@@ -231,16 +241,20 @@ export default class promise extends Promise<any> {
       */
   }
 
-  race(promises: Array<any>, done?: NEXT, fail?: NEXT) {
-    //typically same as .all()
-    if (!eldeeb.isArray(promises)) return this;
-    return this.then(() => Promise.race(promises)).then(done, fail);
+  race(promises: any[], done?: NEXT, fail?: NEXT) {
+    return eldeeb.run({ run: "race", ...arguments }, () => {
+      //typically same as .all()
+      if (!eldeeb.isArray(promises)) return this;
+      return this.then(() => Promise.race(promises)).then(done, fail);
+    });
   }
 
   resolve(value?: any, seconds?: number) {
-    if (seconds) return this.wait(seconds).resolve(value);
-    Promise.resolve(value);
-    return this;
+    return eldeeb.run({ run: arguments.callee.name, ...arguments }, () => {
+      if (seconds) return this.wait(seconds).resolve(value);
+      Promise.resolve(value);
+      return this;
+    });
   }
 
   reject(error?: any, seconds?: number) {

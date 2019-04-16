@@ -1,6 +1,7 @@
 import * as mongoose from "mongoose";
 import { generate as shortId } from "shortId";
 import $eldeeb from "./index.js";
+import { FN, NEXT, RESOLVE } from "./promise.js";
 
 let eldeeb = new $eldeeb({
   mark: "db/mongoDB"
@@ -22,7 +23,9 @@ interface schemaObj {
   [key: string]: any;
 }
 
-interface options {} //todo:
+interface options {
+  [key: string]: any;
+}
 
 export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
   //mongoose/lib/index.js exports new mongoose(), not the class itself; also mongoose is a Function
@@ -34,18 +37,8 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
   public pk;
   public uri;
 
-  //tmp: for test
-  public test:  eldeeb;
-  public test2: typeof eldeeb;
-  public test3: typeof eldeeb.promiseTypes.NEXT;
-
-  constructor(
-    options: options,
-    done?:  eldeeb.promiseTypes.NEXT,
-    fail?: eldeeb.promiseTypes.NEXT,
-    events?: any,
-    test: eldeeb; //tmp for test
-  ) {
+  //public test:eldeeb or $eldeeb or typeof eldeeb or typeof $eldeeb
+  constructor(options?: options, done?: NEXT, fail?: NEXT, events?: any) {
     //todo: return Promise ; events:function
     //note: if this class didn't extends mongoose, 1- don't use super() 2- use mongoose instead of this to access mongoose properties
     //when extends

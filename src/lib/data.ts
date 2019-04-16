@@ -2,32 +2,54 @@ import fs from "fs";
 import Path from "path";
 import $eldeeb from "./index.js";
 
+/*
+Todo:
+- create class dataSync
+*/
 let eldeeb = new $eldeeb({
   mark: "data"
 });
+
+interface deleteOptions {
+  files?: boolean; //delete files only, dont delete folders
+  keepDir?: boolean; //if false, delete the folder content, but not the folder itself, default=false
+  //[name: string]: any;
+}
+type PathLike = import("fs").PathLike; //or use ///<referce ...>
+
 export default class data {
-  root: string;
-  constructor(root) {
-    root = root || ""; //if it null it will be the current working dir (of the working script)
-    this.root = Path.resolve(root);
+  constructor(public root: string) {
+    eldeeb.run({ run: "{}", ...arguments }, () => {
+      this.root = Path.resolve(root || ""); //if it null it will be the current working dir (of the working script)
+    });
   }
 
-  mtime(file) {
+  mtime(file: PathLike) {
     //modified time of a file in MS
-    return fs.statSync(file).mtimeMs;
+    return eldeeb.run({ run: "", ...arguments }, () => {
+      return fs.statSync(file).mtimeMs;
+    });
   }
-  path(path) {
+  path(path: PathLike) {
     //add root & normalize the path to guarantee that the path seperator type of the operating system will be used consistently (e.g. this will turn C:\directory/test into C:\directory\test (when being on Windows)
-    return Path.normalize(Path.join(this.root, path)); //nx: resolve()?
+    return eldeeb.run({ run: "", ...arguments }, () => {
+      return Path.normalize(Path.join(this.root, path.toString())); //nx: resolve()?
+    });
   }
-  cache(file, data, expire, type, allowEmpty) {
+  cache(
+    file: PathLike,
+    data?: any,
+    expire?: number,
+    json?: boolean,
+    allowEmpty?: boolean
+  ) {
     /*  returns a promise (because some operations executed in async mode) , use await or .then()
         allowEmpty: allow creating an empty cache file
         expire (hours)
     */
-    return eldeeb.run(["cache", file], async () => {
+    return eldeeb.run({ run: "cache", ...arguments }, async () => {
       let now = eldeeb.now();
-      this.mkdir(Path.dirname(file));
+      this.mkdir(Path.dirname(file.toString()));
       file = this.path(file);
       expire *= 60 * 60 * 1000; //ms
       if (
@@ -43,19 +65,23 @@ export default class data {
           else return data;
         } else {
           if (allowEmpty || !eldeeb.isEmpty(data)) fs.writeFileSync(file, data);
-          if (type == "json") return JSON.parse(data);
+          if (json) return JSON.parse(data);
           else return data;
         }
       } else {
         data = fs.readFileSync(file, "utf8"); //without encoding (i.e utf-8) will return a stream insteadof a string
-        if (type == "json") return JSON.parse(data);
+        if (json) return JSON.parse(data);
         else return data;
       }
     });
   }
 
-  mkdir(path, mode?: number | string, index?: string | boolean) {
-    return eldeeb.run(["mkdir", path, mode], () => {
+  mkdir(
+    path: PathLike | PathLike[],
+    mode?: number | string, //ex: 0777
+    index?: string | boolean //ex: index.html
+  ) {
+    return eldeeb.run({ run: "mkdir", ...arguments }, () => {
       if (path instanceof Array)
         return path.map(el => this.mkdir(el, mode, index));
       path = this.path(path);
@@ -83,10 +109,11 @@ export default class data {
       }*/
 
       try {
+        path = <PathLike>path;
         fs.existsSync(path) || fs.mkdirSync(path, { recursive: true });
         if (index !== false) {
           if (!index) index = '<meta http-equiv="REFRESH" content="0;url=/">';
-          fs.writeFileSync(Path.join(path, "index.htm"), index);
+          fs.writeFileSync(Path.join(path.toString(), "index.htm"), index);
           return true;
         }
       } catch (e) {
@@ -106,23 +133,25 @@ export default class data {
   options?: { [name: string]: any } https://stackoverflow.com/questions/42027864/is-there-any-way-to-target-the-plain-javascript-object-type-in-typescript
   */
 
-  delete(path, options?: { [name: string]: any }) {
-    return eldeeb.run({ run: "delete", path, options }, () => {
+  delete(path: PathLike, options?: deleteOptions) {
+    return eldeeb.run({ run: "delete", ...arguments }, () => {
       if (!path) return;
       path = this.path(path);
       if (fs.existsSync(path)) {
-        fs.readdirSync(path).forEach((file, index) => {
-          let curPath = path + "/" + file;
+        fs.readdirSync(path).forEach(file => {
+          let curPath = `${path}/${file}`;
           if (fs.lstatSync(curPath).isDirectory()) {
             if (!options.files) this.delete(curPath);
           } else fs.unlinkSync(curPath);
         });
-        if (!options.outer) fs.rmdirSync(path);
+        if (!options.keepDir) fs.rmdirSync(path);
       }
     });
   }
 
-  inArray(array, el) {
-    return Array.prototype.includes(el);
+  inArray(array: any[], el: any) {
+    return eldeeb.run({ run: "inArray", ...arguments }, () =>
+      array.includes(el)
+    );
   }
 }

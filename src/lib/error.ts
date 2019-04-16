@@ -1,5 +1,8 @@
-import eldeeb from "./index.js";
-eldeeb.options.mark = "error";
+import $eldeeb from "./index.js";
+
+let eldeeb = new $eldeeb({
+  mark: "error"
+});
 
 /*
 - nx: add: file,line,colNumber,stack,...
