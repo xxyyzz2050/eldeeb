@@ -7,7 +7,7 @@ __old
 #---------------------------
 
 # compiled output
-/dist
+# -don't list dist/ folder as it must be published to npm
 /tmp
 /out-tsc
 
