@@ -25,7 +25,7 @@ export const types = {
 //todo: convert from plain object to class to use TypeScript  features, other codes must instance it i.e: new eldeeb(options)
 //todo: dynamically import types
 
-type TypeOptions = {
+export type TypeOptions = {
   log?: boolean; //log some events to the console
   debug?: boolean; //add 'debugger' mark
   minLogLevel?: string;

@@ -15,7 +15,7 @@ interface deleteOptions {
   keepDir?: boolean; //if false, delete the folder content, but not the folder itself, default=false
   //[name: string]: any;
 }
-type PathLike = import("fs").PathLike; //or use ///<referce ...>
+export type PathLike = import("fs").PathLike; //or use ///<referce ...>
 
 export default class data {
   constructor(public root: string) {

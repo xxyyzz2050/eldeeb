@@ -14,6 +14,7 @@
     "declaration": true,
     "strict": false,
     "watch": true,
+    "removeComments": true,
     "paths": {
       "*": ["node_modules/*", "src/types/*"]
     }
