@@ -8,7 +8,7 @@ let eldeeb = new $eldeeb({
 });
 
 //timestamp : true = Date.now | $timestamp | (()=>number) = Date.now | {type:Date, default: timeStamp}
-type timeStamp =
+export type timeStamp =
   | boolean
   | number
   | (() => number)

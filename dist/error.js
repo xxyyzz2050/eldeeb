@@ -8,7 +8,6 @@ let eldeeb = new index_js_1.default({
     mark: "error"
 });
 function default_1(err, throwError, jsError) {
-    //or: class error extends Error -> to add trace to error info (returns only Error object, not object)
     let errors = {
         0: {
             type: "eldeeb/$className/fn",
@@ -19,7 +18,6 @@ function default_1(err, throwError, jsError) {
             msg: "connection uri"
         }
     };
-    //to get the default format errors[0]
     if (typeof err == "function")
         err = err();
     if (err instanceof Array)
@@ -33,16 +31,12 @@ function default_1(err, throwError, jsError) {
     else if (typeof err == "number")
         err = { num: err, type: "eldeeb" };
     if (err) {
-        //eldeeb.objectType(err) == "object"
-        //if(eldeeb.isEmpty(tmp.type)||tmp.type=="eldeeb"){tmp[1]="eldeeb"; err=errors[tmp.num]}
         if (err.type == "eldeeb") {
-            //standard eldeeb error
             this.err = errors[err.num];
         }
         else
             this.err = { type: err.type };
         this.err.num = err.num;
-        //override default err object
         if (!eldeeb.isEmpty(err.msg))
             this.err.msg = err.msg;
         if (!eldeeb.isEmpty(err.details))
@@ -51,10 +45,10 @@ function default_1(err, throwError, jsError) {
             ? err.link
             : "https://eldeeb.com/error/{num}-{msg}")
             .replace(/{(.*?)}/gi, x => this.err[x])
-            .replace(" ", "-"); //or: ${..}; this.err[$1] is invalid
+            .replace(" ", "-");
         if (throwError) {
             if (jsError)
-                throw new Error(this.err); //or Error(this.err.msg) because it accepts 'string' (not object)
+                throw new Error(this.err);
             throw this.err;
         }
     }

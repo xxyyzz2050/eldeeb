@@ -1,7 +1,7 @@
 export declare type FN = import("./promise").FN;
 export declare type NEXT = import("./promise").NEXT;
 export declare type ERROR = import("./error").Err;
-declare type TypeOptions = {
+export declare type TypeOptions = {
     log?: boolean;
     debug?: boolean;
     minLogLevel?: string;
@@ -28,4 +28,3 @@ export default class {
     error(error: ERROR, throwError?: boolean, jsError?: boolean): any;
     data(root: string): any;
 }
-export {};

@@ -17,13 +17,6 @@ var moveOptionsExisting;
     moveOptionsExisting[moveOptionsExisting["stop"] = 3] = "stop";
 })(moveOptionsExisting || (moveOptionsExisting = {}));
 class data {
-    //TODO: move file operates from Data.js to here
-    //todo: create class fileSync
-    /*
-    provide file path to all methods, to avoid creating a new instance for every file
-    i.e new file(path).size() -> new file().size(path)
-    if path didn't provided, this.path will be used
-    */
     constructor(path) {
         this.path = path;
     }
@@ -33,12 +26,9 @@ class data {
                 file = this.path;
             if (typeof file != "string")
                 return null;
-            //TODO: if(file[0]=='.' && no other ".")return file
             return path_1.default.extname(file);
-            //old: return files[i].split(".").pop()
         });
     }
-    //file size in bytes
     size(path, unit) {
         return eldeeb.run(Object.assign({ run: "size" }, arguments), () => {
             if (!path)
@@ -62,18 +52,13 @@ class data {
         return eldeeb.run(Object.assign({ run: "isDir" }, arguments), () => {
             if (!path)
                 path = this.path;
-            return true; //todo
+            return true;
         });
     }
     move(path, newPath, options) {
         return eldeeb.run(Object.assign({ run: "move" }, arguments), () => {
-            //let destination = this.isDir(path) ? newPath : Path.dirname(newPath); //todo: ??
             fs_1.default.renameSync(path, newPath);
-            /*TODO:
-             - if faild, try copy & unlink
-             - options.existing:replace|rename_pattern|continue
-           */
-            return {}; //todo: report
+            return {};
         });
     }
 }
