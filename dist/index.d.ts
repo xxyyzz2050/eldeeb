@@ -1,13 +1,7 @@
-/// <reference types="./index" />
-export declare type TypeOptions = {
-    log?: boolean;
-    debug?: boolean;
-    minLogLevel?: string;
-    mark?: string;
-};
+/// <reference path="types.d.ts" />
 export default class {
-    options: TypeOptions;
-    constructor(options: TypeOptions);
+    options: index.TypeOptions;
+    constructor(options: index.TypeOptions);
     run(mark?: any, fn?: () => any, isPromise?: boolean): any;
     err(e: any, at?: number | string, extra?: any): void;
     log(obj: any, mark?: string | Array<any>, type?: string): void;

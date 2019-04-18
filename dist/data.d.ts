@@ -1,4 +1,3 @@
-/// <reference types="./index" />
 export default class data {
     root: string;
     constructor(root: string);

@@ -1,4 +1,4 @@
-/// <reference types="./index" />
+/// <reference path="types.d.ts" />
 export default class data {
     path: string;
     constructor(path: string);
