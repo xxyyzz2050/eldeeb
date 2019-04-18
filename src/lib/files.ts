@@ -1,4 +1,3 @@
-/// <reference types="./index" />
 import $eldeeb from "./index.js";
 import fs from "fs";
 import Path from "path";

@@ -1,4 +1,3 @@
-/// <reference types="./index" />
 import $eldeeb from "./index.js";
 
 let eldeeb = new $eldeeb({

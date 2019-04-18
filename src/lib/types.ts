@@ -1,54 +1,64 @@
-//contains all definitions
-declare namespace files {
-  enum moveOptionsExisting {
+//contains all types for all classes, organised in namespaces, each namespace contain types declarations for each corresponding class file
+
+namespace index {
+  export type TypeOptions = {
+    log?: boolean; //log some events to the console
+    debug?: boolean; //add 'debugger' mark
+    minLogLevel?: string;
+    mark?: string; //the child class of this class ex: promise,files,...
+  };
+}
+
+namespace files {
+  export enum moveOptionsExisting {
     "replace",
     "rename", //todo: rename pattern ex: {{filename}}({{count++}}).{{ext}}
     "continue", //ignore
     "stop"
   }
-  interface moveOptions {
+  export interface moveOptions {
     existing: moveOptionsExisting;
   }
 }
 
-declare namespace data {
-  interface deleteOptions {
+namespace data {
+  export interface deleteOptions {
     files?: boolean; //delete files only, dont delete folders
     keepDir?: boolean; //if false, delete the folder content, but not the folder itself, default=false
     //[name: string]: any;
   }
-  type PathLike = import("fs").PathLike; //or use ///<referce ...>
+  export type PathLike = import("fs").PathLike; //or use ///<referce ...>
 }
 
-declare namespace promise {
-  type FN = <T>(
+namespace promise {
+  export type FN = <T>(
     resolve?: RESOLVE<T>,
     reject?: (reason?: any) => void
   ) => Promise<T> | void | Array<T>;
-  type RESOLVE<T> = (value?: T | PromiseLike<T>) => void;
-  type NEXT = ((x?: any) => any);
+  export type RESOLVE<T> = (value?: T | PromiseLike<T>) => void;
+  export type NEXT = ((x?: any) => any);
 }
 
-declare namespace error {
-  interface ErrObj {
+namespace error {
+  export interface ErrObj {
     num?: number;
     type?: string;
     msg?: string;
     link?: string;
     details?: any;
   }
-  type Err = number | Array<any> | ErrObj | (() => Err);
+  export type Err = number | Array<any> | ErrObj | (() => Err);
 }
 
-declare namespace dbMongoDB {
+namespace dbMongoDB {
   //timestamp : true = Date.now | $timestamp | (()=>number) = Date.now | {type:Date, default: timeStamp}
-  type timeStamp =
+  export type timeStamp =
     | boolean
     | number
     | (() => number)
     | { type: DateConstructor; default: number | (() => number) };
 
-  interface schemaObj {
+  export interface schemaObj {
     fields?: object;
     agjust?: object;
     times?: timeStamp | [timeStamp, timeStamp]; //or timestamp[] or Array<timeStamp>
@@ -57,7 +67,7 @@ declare namespace dbMongoDB {
     [key: string]: any;
   }
 
-  interface options {
+  export interface options {
     [key: string]: any;
   }
 }

@@ -1,5 +1,3 @@
-/// <reference types="./index" />
-
 /*
 import x=require(); for types only http://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
 */

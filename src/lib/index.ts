@@ -1,4 +1,5 @@
-/// <reference types="./index" />
+/// <reference path="./types.ts" />
+
 /*
 todo:
 - transpiler to auto inject eldeeb.run(), using notation @eldeeb.run()
@@ -29,17 +30,10 @@ export const types = {
 //todo: convert from plain object to class to use TypeScript  features, other codes must instance it i.e: new eldeeb(options)
 //todo: dynamically import types
 
-export type TypeOptions = {
-  log?: boolean; //log some events to the console
-  debug?: boolean; //add 'debugger' mark
-  minLogLevel?: string;
-  mark?: string; //the child class of this class ex: promise,files,...
-};
-
 //console.log('util:', util) //using require&module.exports will prevent this line from calling when run via localhost (called when run via cmd) ,the problem is in : eldeeb/index/isArray->Symbol.iterator, adding quotes will fix it obj['Symbol.iterator'] but it will return a wrong value; may be the error is by Nuxt or babel
 export default class {
-  constructor(public options: TypeOptions) {
-    let defaultOptions: TypeOptions = {
+  constructor(public options: index.TypeOptions) {
+    let defaultOptions: index.TypeOptions = {
       log: false, //nx: min log level
       minLogLevel: "log", //log,warn,error (verbose)
       debug: false,
