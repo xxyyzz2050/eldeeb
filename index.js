@@ -1,3 +1,3 @@
-export { default } from "./dist/lib/";
+export { default } from "./dist/";
 
 //module.exports = require('./lib/')
