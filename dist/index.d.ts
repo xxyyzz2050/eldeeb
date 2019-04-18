@@ -1,7 +1,7 @@
 /// <reference path="types.d.ts" />
 export default class {
-    options: index.TypeOptions;
-    constructor(options: index.TypeOptions);
+    options?: index.TypeOptions;
+    constructor(options?: index.TypeOptions);
     run(mark?: any, fn?: () => any, isPromise?: boolean): any;
     err(e: any, at?: number | string, extra?: any): void;
     log(obj: any, mark?: string | Array<any>, type?: string): void;
