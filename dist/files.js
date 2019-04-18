@@ -9,13 +9,6 @@ const path_1 = __importDefault(require("path"));
 let eldeeb = new index_js_1.default({
     mark: "files"
 });
-var moveOptionsExisting;
-(function (moveOptionsExisting) {
-    moveOptionsExisting[moveOptionsExisting["replace"] = 0] = "replace";
-    moveOptionsExisting[moveOptionsExisting["rename"] = 1] = "rename";
-    moveOptionsExisting[moveOptionsExisting["continue"] = 2] = "continue";
-    moveOptionsExisting[moveOptionsExisting["stop"] = 3] = "stop";
-})(moveOptionsExisting || (moveOptionsExisting = {}));
 class data {
     constructor(path) {
         this.path = path;

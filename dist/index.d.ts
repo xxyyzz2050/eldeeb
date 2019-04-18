@@ -1,6 +1,4 @@
-export declare type FN = import("./promise").FN;
-export declare type NEXT = import("./promise").NEXT;
-export declare type ERROR = import("./error").Err;
+/// <reference types="./index" />
 export declare type TypeOptions = {
     log?: boolean;
     debug?: boolean;
@@ -23,8 +21,8 @@ export default class {
     merge(target: any, ...obj: any[]): any;
     json(data: string | object): any;
     db(type: string, options: object, done?: () => any, fail?: () => any, events?: any): any;
-    promise(fn: FN, done?: NEXT, failed?: NEXT): any;
+    promise(fn: promise.FN, done?: promise.NEXT, failed?: promise.NEXT): any;
     when(fn: () => any, done?: () => any, failed?: () => any): any;
-    error(error: ERROR, throwError?: boolean, jsError?: boolean): any;
+    error(error: error.Err, throwError?: boolean, jsError?: boolean): any;
     data(root: string): any;
 }
