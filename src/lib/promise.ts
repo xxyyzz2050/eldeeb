@@ -1,3 +1,5 @@
+/// <reference types="./index" />
+
 /*
 import x=require(); for types only http://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
 */
@@ -39,12 +41,6 @@ promise.finally() is 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaSc
 
 //type FN = ((resolve?: any, reject?: any) => any) | Array<any>;
 //from: lib.es2015.promise.d.ts (but it also returns void | Array of race functions)
-export type FN = <T>(
-  resolve?: RESOLVE<T>,
-  reject?: (reason?: any) => void
-) => Promise<T> | void | Array<T>;
-export type RESOLVE<T> = (value?: T | PromiseLike<T>) => void;
-export type NEXT = ((x?: any) => any);
 
 export default class promise extends Promise<any> {
   //todo: class promise<T> extends Promise<T>
@@ -54,7 +50,12 @@ export default class promise extends Promise<any> {
   https://github.com/Microsoft/TypeScript/issues/21549
   */
   public clearTimeout: <T>(value?: T | PromiseLike<T>) => void; //same type of resolve; check this.wait(); //todo: remove from class properties, move scope to .wait()
-  constructor(fn: FN, done?: NEXT, failed?: NEXT, public $stop?: boolean) {
+  constructor(
+    fn: promise.FN,
+    done?: promise.NEXT,
+    failed?: promise.NEXT,
+    public $stop?: boolean
+  ) {
     //wait until fn finish excuting, fn() has to settle (resolve or reject) the promise
     //stop is used in case of a new instance is created from anoter context ex: this.wait(1) will create another instance and may like to stop the chain after resolving it
     //if fn is array of functions-> apply this.all() or: {all:[fn1,..]} because it can be any other array
@@ -75,7 +76,12 @@ export default class promise extends Promise<any> {
       return this; //don't return promise to enable chaining for other (non-promise) functions such as done() and to customise then
     });
   }
-  when(fn: FN, done?: NEXT, failed?: NEXT, stop?: boolean) {
+  when(
+    fn: promise.FN,
+    done?: promise.NEXT,
+    failed?: promise.NEXT,
+    stop?: boolean
+  ) {
     return new promise(fn, done, failed, stop);
 
     /*
@@ -88,8 +94,8 @@ export default class promise extends Promise<any> {
 
   wait(
     seconds: number | (() => number),
-    done?: NEXT,
-    fail?: NEXT,
+    done?: promise.NEXT,
+    fail?: promise.NEXT,
     stop?: boolean
   ) {
     return eldeeb.run({ run: "wait", ...arguments }, () => {
@@ -141,13 +147,13 @@ export default class promise extends Promise<any> {
     });
   }
 
-  then(done?: NEXT, fail?: NEXT, stop?: boolean) {
+  then(done?: promise.NEXT, fail?: promise.NEXT, stop?: boolean) {
     return eldeeb.run({ run: "then", ...arguments }, async () => {
       //nx: if the promise not settled call this.resolve()
       // nx: if (eldeeb.objectType(fn) == 'object' &&fn.then &&typeof obj.then == 'function') {//thenable object}
       if (!this.$stop) {
         if (stop) this.stop(); //for the next .then();
-        let tmp: NEXT;
+        let tmp: promise.NEXT;
         if (
           done !== null &&
           typeof done != "undefined" &&
@@ -175,11 +181,11 @@ export default class promise extends Promise<any> {
     });
   }
 
-  done(done: NEXT, stop?: boolean) {
+  done(done: promise.NEXT, stop?: boolean) {
     return this.then(done, null, typeof stop == "undefined" ? true : false); //default:stop=true
   }
 
-  fail(fail: NEXT, stop?: boolean) {
+  fail(fail: promise.NEXT, stop?: boolean) {
     //same as catch() but eits the chain by default
     return this.then(null, fail, typeof stop == "undefined" ? true : false);
   }
@@ -197,14 +203,14 @@ export default class promise extends Promise<any> {
     return this;
   }
 
-  complete(fn: NEXT, done?: NEXT, fail?: NEXT) {
+  complete(fn: promise.NEXT, done?: promise.NEXT, fail?: promise.NEXT) {
     //=finally() but default value of stop=true
     //return this.then(fn, done, fail, typeof stop == "undefined" ? true : false);
     this.stop(); //todo: test if this line must be after this.finally()
     return this.finally(fn, done, fail);
   }
 
-  finally(fn: NEXT, done?: NEXT, fail?: NEXT) {
+  finally(fn: promise.NEXT, done?: promise.NEXT, fail?: promise.NEXT) {
     //here fn is NEXT not FN, because it will be escecuted inside .then() i.e as done not as an executor function
     //return this.then(fn).then(done, fail);  //temporary until finally oficially released, now promise.finally still in 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally
     return this.finally(fn).then(done, fail);
@@ -229,7 +235,7 @@ export default class promise extends Promise<any> {
   }
 
   //###### static methods: race,all,reject,resolve; use Promice.race() not this.promise.race
-  all(promises: Array<any>, done?: NEXT, fail?: NEXT) {
+  all(promises: Array<any>, done?: promise.NEXT, fail?: promise.NEXT) {
     //if (!eldeeb.isArray(promises)) return this; //nx: or any iterable ->see eldeeb.isArray()
     return this.then(() => Promise.all(promises)).then(done, fail);
     //done() accept array of arguments, one for each promise
@@ -241,7 +247,7 @@ export default class promise extends Promise<any> {
       */
   }
 
-  race(promises: any[], done?: NEXT, fail?: NEXT) {
+  race(promises: any[], done?: promise.NEXT, fail?: promise.NEXT) {
     return eldeeb.run({ run: "race", ...arguments }, () => {
       //typically same as .all()
       if (!eldeeb.isArray(promises)) return this;

@@ -1,3 +1,4 @@
+/// <reference types="./index" />
 import fs from "fs";
 import Path from "path";
 import $eldeeb from "./index.js";
@@ -10,13 +11,6 @@ let eldeeb = new $eldeeb({
   mark: "data"
 });
 
-interface deleteOptions {
-  files?: boolean; //delete files only, dont delete folders
-  keepDir?: boolean; //if false, delete the folder content, but not the folder itself, default=false
-  //[name: string]: any;
-}
-export type PathLike = import("fs").PathLike; //or use ///<referce ...>
-
 export default class data {
   constructor(public root: string) {
     eldeeb.run({ run: "{}", ...arguments }, () => {
@@ -24,20 +18,20 @@ export default class data {
     });
   }
 
-  mtime(file: PathLike) {
+  mtime(file: data.PathLike) {
     //modified time of a file in MS
     return eldeeb.run({ run: "", ...arguments }, () => {
       return fs.statSync(file).mtimeMs;
     });
   }
-  path(path: PathLike) {
+  path(path: data.PathLike) {
     //add root & normalize the path to guarantee that the path seperator type of the operating system will be used consistently (e.g. this will turn C:\directory/test into C:\directory\test (when being on Windows)
     return eldeeb.run({ run: "", ...arguments }, () => {
       return Path.normalize(Path.join(this.root, path.toString())); //nx: resolve()?
     });
   }
   cache(
-    file: PathLike,
+    file: data.PathLike,
     data?: any,
     expire?: number,
     json?: boolean,
@@ -77,7 +71,7 @@ export default class data {
   }
 
   mkdir(
-    path: PathLike | PathLike[],
+    path: data.PathLike | data.PathLike[],
     mode?: number | string, //ex: 0777
     index?: string | boolean //ex: index.html
   ) {
@@ -109,7 +103,7 @@ export default class data {
       }*/
 
       try {
-        path = <PathLike>path;
+        path = <data.PathLike>path;
         fs.existsSync(path) || fs.mkdirSync(path, { recursive: true });
         if (index !== false) {
           if (!index) index = '<meta http-equiv="REFRESH" content="0;url=/">';
@@ -133,7 +127,7 @@ export default class data {
   options?: { [name: string]: any } https://stackoverflow.com/questions/42027864/is-there-any-way-to-target-the-plain-javascript-object-type-in-typescript
   */
 
-  delete(path: PathLike, options?: deleteOptions) {
+  delete(path: data.PathLike, options?: data.deleteOptions) {
     return eldeeb.run({ run: "delete", ...arguments }, () => {
       if (!path) return;
       path = this.path(path);

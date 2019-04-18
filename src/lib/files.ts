@@ -1,3 +1,4 @@
+/// <reference types="./index" />
 import $eldeeb from "./index.js";
 import fs from "fs";
 import Path from "path";
@@ -5,16 +6,6 @@ import Path from "path";
 let eldeeb = new $eldeeb({
   mark: "files"
 });
-
-enum moveOptionsExisting {
-  "replace",
-  "rename", //todo: rename pattern ex: {{filename}}({{count++}}).{{ext}}
-  "continue", //ignore
-  "stop"
-}
-interface moveOptions {
-  existing: moveOptionsExisting;
-}
 
 export default class data {
   //TODO: move file operates from Data.js to here
@@ -60,7 +51,7 @@ export default class data {
     });
   }
 
-  move(path: string, newPath: string, options?: moveOptions): {} {
+  move(path: string, newPath: string, options?: files.moveOptions): {} {
     return eldeeb.run({ run: "move", ...arguments }, () => {
       //let destination = this.isDir(path) ? newPath : Path.dirname(newPath); //todo: ??
       fs.renameSync(path, newPath);

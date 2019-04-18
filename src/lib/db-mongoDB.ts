@@ -1,31 +1,10 @@
 import * as mongoose from "mongoose";
 import { generate as shortId } from "shortId";
 import $eldeeb from "./index.js";
-import { FN, NEXT, RESOLVE } from "./promise.js";
 
 let eldeeb = new $eldeeb({
   mark: "db/mongoDB"
 });
-
-//timestamp : true = Date.now | $timestamp | (()=>number) = Date.now | {type:Date, default: timeStamp}
-export type timeStamp =
-  | boolean
-  | number
-  | (() => number)
-  | { type: DateConstructor; default: number | (() => number) };
-
-interface schemaObj {
-  fields?: object;
-  agjust?: object;
-  times?: timeStamp | [timeStamp, timeStamp]; //or timestamp[] or Array<timeStamp>
-  createdAt?: timeStamp;
-  modifiedAt?: timeStamp; //todo: modifiedAt?:this.createdAt
-  [key: string]: any;
-}
-
-interface options {
-  [key: string]: any;
-}
 
 export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
   //mongoose/lib/index.js exports new mongoose(), not the class itself; also mongoose is a Function
@@ -38,7 +17,12 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
   public uri;
 
   //public test:eldeeb or $eldeeb or typeof eldeeb or typeof $eldeeb
-  constructor(options?: options, done?: NEXT, fail?: NEXT, events?: any) {
+  constructor(
+    options?: dbMongoDB.options,
+    done?: promise.NEXT,
+    fail?: promise.NEXT,
+    events?: any
+  ) {
     //todo: return Promise ; events:function
     //note: if this class didn't extends mongoose, 1- don't use super() 2- use mongoose instead of this to access mongoose properties
     //when extends
@@ -241,7 +225,7 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
   }
 
   schema(
-    obj: schemaObj | mongoose.Schema,
+    obj: dbMongoDB.schemaObj | mongoose.Schema,
     options?: object,
     indexes?: Array<object | [object, object]> // [{fields} | [{fields},{options}] ]
   ): mongoose.Schema {
@@ -272,9 +256,9 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
 
         if ("times" in obj && obj.times !== false) {
           if (eldeeb.objectType(obj.times) !== "array")
-            (<[timeStamp, timeStamp]>obj.times) = [
-              <timeStamp>obj.times,
-              <timeStamp>obj.times
+            (<[dbMongoDB.timeStamp, dbMongoDB.timeStamp]>obj.times) = [
+              <dbMongoDB.timeStamp>obj.times,
+              <dbMongoDB.timeStamp>obj.times
             ];
           if (!("createdAt" in obj) && obj.tomes[0] !== false) {
             //obj.times dosen't override obj.createdAt ot obj.modifiedAt

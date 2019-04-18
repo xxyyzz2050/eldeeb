@@ -1,3 +1,4 @@
+/// <reference types="./index" />
 /*
 todo:
 - transpiler to auto inject eldeeb.run(), using notation @eldeeb.run()
@@ -7,9 +8,12 @@ todo:
 
 import util from "util";
 
+/*
+// moved to index.d.ts
 export type FN = import("./promise").FN; //https://stackoverflow.com/a/52115295; export type FN=...
 export type NEXT = import("./promise").NEXT;
 export type ERROR = import("./error").Err;
+*/
 
 /*
 //todo: the problem is that typescript types are not available in runtime (i.e JS code), so we cannot use it as a value or a plain obj property
@@ -288,7 +292,7 @@ todo: what is the usage of this function?
     return new db(options, done, fail, events); //nx: if file_exists
   }
 
-  promise(fn: FN, done?: NEXT, failed?: NEXT) {
+  promise(fn: promise.FN, done?: promise.NEXT, failed?: promise.NEXT) {
     //eldeeb = this
     let promise = require("./promise.js").default;
     return new promise(fn, done, failed);
@@ -298,7 +302,7 @@ todo: what is the usage of this function?
     return this.promise(fn, done, failed);
   }
 
-  error(error: ERROR, throwError?: boolean, jsError?: boolean) {
+  error(error: error.Err, throwError?: boolean, jsError?: boolean) {
     let err = require("./error.js").default;
     return new err(error, throwError, jsError);
   }

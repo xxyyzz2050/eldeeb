@@ -1,3 +1,4 @@
+/// <reference types="./index" />
 import $eldeeb from "./index.js";
 
 let eldeeb = new $eldeeb({
@@ -9,15 +10,12 @@ let eldeeb = new $eldeeb({
 - wrong: throw new Error() from this file, will include file & lineNumber of this file (not the file witch throw the error), so we have to get the correct file,lineNumber
 
 */
-export interface ErrObj {
-  num?: number;
-  type?: string;
-  msg?: string;
-  link?: string;
-  details?: any;
-}
-export type Err = number | Array<any> | ErrObj | (() => Err);
-export default function(err: Err, throwError?: boolean, jsError?: boolean) {
+
+export default function(
+  err: error.Err,
+  throwError?: boolean,
+  jsError?: boolean
+) {
   //or: class error extends Error -> to add trace to error info (returns only Error object, not object)
   let errors = {
     0: {
@@ -40,22 +38,24 @@ export default function(err: Err, throwError?: boolean, jsError?: boolean) {
       link: err[3],
       details: err[4]
     };
-  else if (typeof err == "number") err = <Err>{ num: err, type: "eldeeb" };
+  else if (typeof err == "number")
+    err = <error.Err>{ num: err, type: "eldeeb" };
 
-  if (<ErrObj>err) {
+  if (<error.ErrObj>err) {
     //eldeeb.objectType(err) == "object"
     //if(eldeeb.isEmpty(tmp.type)||tmp.type=="eldeeb"){tmp[1]="eldeeb"; err=errors[tmp.num]}
-    if ((<ErrObj>err).type == "eldeeb") {
+    if ((<error.ErrObj>err).type == "eldeeb") {
       //standard eldeeb error
-      this.err = errors[(<ErrObj>err).num];
-    } else this.err = { type: (<ErrObj>err).type };
-    this.err.num = (<ErrObj>err).num;
+      this.err = errors[(<error.ErrObj>err).num];
+    } else this.err = { type: (<error.ErrObj>err).type };
+    this.err.num = (<error.ErrObj>err).num;
     //override default err object
-    if (!eldeeb.isEmpty((<ErrObj>err).msg)) this.err.msg = (<ErrObj>err).msg;
-    if (!eldeeb.isEmpty((<ErrObj>err).details))
-      this.err.details = (<ErrObj>err).details;
-    this.err.link = (!eldeeb.isEmpty((<ErrObj>err).link)
-      ? (<ErrObj>err).link
+    if (!eldeeb.isEmpty((<error.ErrObj>err).msg))
+      this.err.msg = (<error.ErrObj>err).msg;
+    if (!eldeeb.isEmpty((<error.ErrObj>err).details))
+      this.err.details = (<error.ErrObj>err).details;
+    this.err.link = (!eldeeb.isEmpty((<error.ErrObj>err).link)
+      ? (<error.ErrObj>err).link
       : "https://eldeeb.com/error/{num}-{msg}"
     )
       .replace(/{(.*?)}/gi, x => this.err[x])
