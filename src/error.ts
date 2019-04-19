@@ -10,11 +10,7 @@ let eldeeb = new $eldeeb({
 
 */
 
-export default function(
-  err: error.Err,
-  throwError?: boolean,
-  jsError?: boolean
-) {
+export = function(err: error.Err, throwError?: boolean, jsError?: boolean) {
   //or: class error extends Error -> to add trace to error info (returns only Error object, not object)
   let errors = {
     0: {
@@ -69,4 +65,4 @@ export default function(
     else this.err = { msg: err };
   }
   return this.err;
-}
+};

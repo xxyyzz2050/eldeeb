@@ -6,7 +6,7 @@ let eldeeb = new $eldeeb({
   mark: "files"
 });
 
-export default class data {
+export = class {
   //TODO: move file operates from Data.js to here
   //todo: create class fileSync
   /*
@@ -61,4 +61,4 @@ export default class data {
       return {}; //todo: report
     });
   }
-}
+};

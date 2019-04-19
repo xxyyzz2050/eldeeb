@@ -7,7 +7,7 @@ let eldeeb = new $eldeeb({
   mark: "db/mongoDB"
 });
 
-export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
+export = class /*todo: extends mongoose.constructor*/ {
   //mongoose/lib/index.js exports new mongoose(), not the class itself; also mongoose is a Function
 
   private promise; //todo: promise: eldeeb.promise
@@ -423,7 +423,7 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
     return array; //todo: return a string of elements separated by the delimeter
   }
   //----------------------- /aggregation helpers ------------------------ //
-}
+};
 
 /*class db_mongoDB_model extends mongoose.Model {
   constructor(public coll, public schema) {

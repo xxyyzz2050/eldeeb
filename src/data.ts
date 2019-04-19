@@ -10,7 +10,7 @@ let eldeeb = new $eldeeb({
   mark: "data"
 });
 
-export default class data {
+export = class {
   constructor(public root: string) {
     eldeeb.run({ run: "{}", ...arguments }, () => {
       this.root = Path.resolve(root || ""); //if it null it will be the current working dir (of the working script)
@@ -147,4 +147,4 @@ export default class data {
       array.includes(el)
     );
   }
-}
+};

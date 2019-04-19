@@ -31,8 +31,8 @@ export const types = {
 //todo: dynamically import types
 
 //console.log('util:', util) //using require&module.exports will prevent this line from calling when run via localhost (called when run via cmd) ,the problem is in : eldeeb/index/isArray->Symbol.iterator, adding quotes will fix it obj['Symbol.iterator'] but it will return a wrong value; may be the error is by Nuxt or babel
-export default class {
-  constructor(private options?: index.TypeOptions) {
+export = class {
+  constructor(public options?: index.TypeOptions) {
     let defaultOptions: index.TypeOptions = {
       log: false, //nx: min log level
       minLogLevel: "log", //log,warn,error (verbose)
@@ -305,4 +305,4 @@ todo: what is the usage of this function?
     let data = require("./data.js").default;
     return new data(root);
   }
-}
+};
