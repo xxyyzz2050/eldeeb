@@ -10,14 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const index_js_1 = __importDefault(require("./index.js"));
 let eldeeb = new index_js_1.default({
     mark: "data"
 });
-class data {
+module.exports = class {
     constructor(root) {
         this.root = root;
         eldeeb.run(Object.assign({ run: "{}" }, arguments), () => {
@@ -115,6 +114,5 @@ class data {
     inArray(array, el) {
         return eldeeb.run(Object.assign({ run: "inArray" }, arguments), () => array.includes(el));
     }
-}
-exports.default = data;
+};
 //# sourceMappingURL=data.js.map

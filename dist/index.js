@@ -2,9 +2,8 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = __importDefault(require("util"));
-class default_1 {
+module.exports = class {
     constructor(options) {
         this.options = options;
         let defaultOptions = {
@@ -79,7 +78,7 @@ class default_1 {
                 (typeof obj != "string" && typeof obj[Symbol.iterator] == "function")));
     }
     inArray(el, arr, sensitive) {
-        return this.run({ run: "eldeeb/inArray", el, arr, sensitive }, () => {
+        return this.run(Object.assign({ run: "eldeeb/inArray" }, arguments), () => {
             if (!sensitive && typeof el == "string")
                 el = el.toLowerCase();
             if (this.isArray(arr)) {
@@ -115,7 +114,7 @@ class default_1 {
         return typeof obj == "undefined" || this.inArray(obj, ["", null, [], {}]);
     }
     merge(target, ...obj) {
-        return this.run(["merge", target, ...obj], function () {
+        return this.run(["merge", ...arguments], function () {
             let type = this.objectType(target);
             for (var i = 1; i < arguments.length; i++) {
                 if (this.objectType(arguments[i]) !== type)
@@ -172,6 +171,5 @@ class default_1 {
         let data = require("./data.js").default;
         return new data(root);
     }
-}
-exports.default = default_1;
+};
 //# sourceMappingURL=index.js.map

@@ -5,6 +5,9 @@ declare namespace index {
         minLogLevel?: string;
         mark?: string;
     };
+    interface obj {
+        [key: string]: any;
+    }
 }
 declare namespace files {
     enum moveOptionsExisting {
@@ -52,7 +55,8 @@ declare namespace dbMongoDB {
         modifiedAt?: timeStamp;
         [key: string]: any;
     }
-    interface options {
-        [key: string]: any;
+    interface connectionOptions extends index.obj {
+    }
+    interface modelOptions extends index.obj {
     }
 }

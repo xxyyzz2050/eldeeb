@@ -2,12 +2,11 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-Object.defineProperty(exports, "__esModule", { value: true });
 const index_js_1 = __importDefault(require("./index.js"));
 let eldeeb = new index_js_1.default({
     mark: "error"
 });
-function default_1(err, throwError, jsError) {
+module.exports = function (err, throwError, jsError) {
     let errors = {
         0: {
             type: "eldeeb/$className/fn",
@@ -59,6 +58,5 @@ function default_1(err, throwError, jsError) {
             this.err = { msg: err };
     }
     return this.err;
-}
-exports.default = default_1;
+};
 //# sourceMappingURL=error.js.map

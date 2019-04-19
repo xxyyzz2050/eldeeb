@@ -176,7 +176,7 @@ export = class /*todo: extends mongoose.constructor*/ {
   ) {
     //this function just creats a new instance of this class
     return eldeeb.run(["connect", options /*,callback*/], () => {
-      return new db_mongoDB(options, done, fail);
+      return new this(options, done, fail);
     });
   }
 
@@ -322,7 +322,7 @@ export = class /*todo: extends mongoose.constructor*/ {
 
   db_mongoDB_model(
     coll: string,
-    schema?: string | mongoose.Schema,
+    schema?: string | mongoose.Schema | dbMongoDB.schemaObj,
     options?: dbMongoDB.modelOptions,
     indexes?: Array<object | [object, object]>
   ) {
@@ -337,7 +337,7 @@ export = class /*todo: extends mongoose.constructor*/ {
       if (!(schema instanceof mongoose.Schema)) {
         options = options || {};
         if (!("collection" in options)) options["collection"] = coll;
-        schema = this.schema(schema, options, indexes);
+        schema = this.schema(<dbMongoDB.schemaObj>schema, options, indexes);
       }
 
       return { model: this.connection.model(coll, schema), schema: schema }; //var {model,schema}=db.model(..); or {model:MyModel,schema:mySchema}=db.model(..) then: schema.set(..)
