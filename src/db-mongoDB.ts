@@ -1,3 +1,4 @@
+//todo: rename to dbMongoDB
 import * as mongoose from "mongoose";
 import { generate as shortId } from "shortId";
 import $eldeeb from "./index.js";
@@ -18,7 +19,7 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
 
   //public test:eldeeb or $eldeeb or typeof eldeeb or typeof $eldeeb
   constructor(
-    options?: dbMongoDB.options,
+    options?: dbMongoDB.connectionOptions,
     done?: promise.NEXT,
     fail?: promise.NEXT,
     events?: any
@@ -168,14 +169,18 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
     }); //run
   }
 
-  connect(options, done, fail) {
+  connect(
+    options: dbMongoDB.connectionOptions,
+    done: promise.NEXT,
+    fail: promise.NEXT
+  ) {
     //this function just creats a new instance of this class
     return eldeeb.run(["connect", options /*,callback*/], () => {
       return new db_mongoDB(options, done, fail);
     });
   }
 
-  encode(str) {
+  encode(str: string) {
     return encodeURIComponent(str).replace(/%/g, "%25");
   }
 
@@ -315,7 +320,12 @@ export default class db_mongoDB /*todo: extends mongoose.constructor*/ {
     });
   }
 
-  db_mongoDB_model(coll, schema, options, indexes) {
+  db_mongoDB_model(
+    coll: string,
+    schema?: string | mongoose.Schema,
+    options?: dbMongoDB.modelOptions,
+    indexes?: Array<object | [object, object]>
+  ) {
     //todo: field: anotherSchema ??
     if (!this.connection) return { model: null, schema: null };
     return eldeeb.run(["model", schema, options], () => {

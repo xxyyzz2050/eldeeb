@@ -1,4 +1,5 @@
 //contains all types for all classes, organised in namespaces, each namespace contain types declarations for each corresponding class file
+//todo: namespace Vs module https://www.typescriptlang.org/docs/handbook/modules.html -> Working with Other JavaScript Libraries -> Ambient Modules
 
 namespace index {
   export type TypeOptions = {
@@ -7,6 +8,10 @@ namespace index {
     minLogLevel?: string;
     mark?: string; //the child class of this class ex: promise,files,...
   };
+
+  export interface obj {
+    [key: string]: any;
+  }
 }
 
 namespace files {
@@ -67,7 +72,7 @@ namespace dbMongoDB {
     [key: string]: any;
   }
 
-  export interface options {
-    [key: string]: any;
-  }
+  //todo: specify keys for connectionOptions, modelOptions
+  export interface connectionOptions extends index.obj {}
+  export interface modelOptions extends index.obj {}
 }

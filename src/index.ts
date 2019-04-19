@@ -32,7 +32,7 @@ export const types = {
 
 //console.log('util:', util) //using require&module.exports will prevent this line from calling when run via localhost (called when run via cmd) ,the problem is in : eldeeb/index/isArray->Symbol.iterator, adding quotes will fix it obj['Symbol.iterator'] but it will return a wrong value; may be the error is by Nuxt or babel
 export default class {
-  constructor(public options?: index.TypeOptions) {
+  constructor(private options?: index.TypeOptions) {
     let defaultOptions: index.TypeOptions = {
       log: false, //nx: min log level
       minLogLevel: "log", //log,warn,error (verbose)
@@ -161,7 +161,7 @@ todo: what is the usage of this function?
     arr: Array<any> | object | string,
     sensitive?: boolean //case sensitive
   ): boolean {
-    return this.run({ run: "eldeeb/inArray", el, arr, sensitive }, () => {
+    return this.run({ run: "eldeeb/inArray", ...arguments }, () => {
       if (!sensitive && typeof el == "string") el = el.toLowerCase();
       if (this.isArray(arr)) {
         for (var i = 0; i < (<Array<any>>arr).length; i++) {
@@ -224,7 +224,7 @@ todo: what is the usage of this function?
   merge(target: any, ...obj: any[]): any {
     //merge objects,arrays,classes (must besame type) ;
     //don't use "arguments" in an arrow functions
-    return this.run(["merge", target, ...obj], function() {
+    return this.run(["merge", ...arguments], function() {
       let type = this.objectType(target);
       for (var i = 1; i < arguments.length; i++) {
         if (this.objectType(arguments[i]) !== type) return target;
