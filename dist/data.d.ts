@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import fs from "fs";
 declare const _default: {
     new (root: string): {
