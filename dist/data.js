@@ -33,41 +33,30 @@ module.exports = class {
             return path_1.default.normalize(path_1.default.join(this.root, path.toString()));
         });
     }
-    cache(file, data, expire, json, allowEmpty) {
+    cache(file, data, expire, type, allowEmpty) {
         return eldeeb.run(Object.assign({ run: "cache" }, arguments), () => __awaiter(this, void 0, void 0, function* () {
             let now = eldeeb.now();
-            this.mkdir(path_1.default.dirname(file.toString()));
             file = this.path(file);
+            this.mkdir(path_1.default.dirname(file));
             expire *= 60 * 60 * 1000;
             if (!fs_1.default.existsSync(file) ||
-                (!isNaN(expire) && (expire < 0 || this.mtime(file) + expire < now))) {
+                (!isNaN(expire) &&
+                    (expire < 0 || this.mtime(file) + expire < now))) {
                 eldeeb.log(`cache: ${file} updated`);
                 if (typeof data == "function")
                     data = yield data();
-                if (eldeeb.isArray(data) || eldeeb.objectType(data) == "object") {
-                    let string = JSON.stringify(data);
-                    fs_1.default.writeFileSync(file, string);
-                    if (data == "string")
-                        return string;
-                    else
-                        return data;
-                }
-                else {
-                    if (allowEmpty || !eldeeb.isEmpty(data))
-                        fs_1.default.writeFileSync(file, data);
-                    if (json)
-                        return JSON.parse(data);
-                    else
-                        return data;
-                }
+                let dataType = eldeeb.objectType(data);
+                if (dataType == "array" || dataType == "object")
+                    fs_1.default.writeFileSync(file, JSON.stringify(data));
+                else if (allowEmpty || !eldeeb.isEmpty(data))
+                    fs_1.default.writeFileSync(file, data);
             }
             else {
                 data = fs_1.default.readFileSync(file, "utf8");
-                if (json)
+                if (type == "json")
                     return JSON.parse(data);
-                else
-                    return data;
             }
+            return data;
         }));
     }
     mkdir(path, mode, index) {
@@ -76,7 +65,6 @@ module.exports = class {
                 return path.map(el => this.mkdir(el, mode, index));
             path = this.path(path);
             try {
-                path = path;
                 fs_1.default.existsSync(path) || fs_1.default.mkdirSync(path, { recursive: true });
                 if (index !== false) {
                     if (!index)
