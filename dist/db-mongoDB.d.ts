@@ -12,7 +12,7 @@ export default class {
     on(event: any, callback: any, once?: boolean): any;
     once(event: any, callback: any): any;
     schema(obj: dbMongoDB.schemaObj | mongoose.Schema, options?: object, indexes?: Array<object | [object, object]>): mongoose.Schema;
-    db_mongoDB_model(coll: string, schema?: string | mongoose.Schema | dbMongoDB.schemaObj, options?: dbMongoDB.modelOptions, indexes?: Array<object | [object, object]>): any;
+    model(coll: string, schema?: string | mongoose.Schema | dbMongoDB.schemaObj, options?: dbMongoDB.modelOptions, indexes?: Array<object | [object, object]>): any;
     createIndex(model: any, index: any, options: any): any;
     index(model: any, index: any, options: any): any;
     set(key: any, value: any): void;

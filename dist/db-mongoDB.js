@@ -211,7 +211,7 @@ class default_1 {
             return schema;
         });
     }
-    db_mongoDB_model(coll, schema, options, indexes) {
+    model(coll, schema, options, indexes) {
         if (!this.connection)
             return { model: null, schema: null };
         return eldeeb.run(["model", schema, options], () => {

@@ -320,7 +320,8 @@ export default class /*todo: extends mongoose.constructor*/ {
     });
   }
 
-  db_mongoDB_model(
+  model(
+    //renamed from db_mongoDB_model()
     coll: string,
     schema?: string | mongoose.Schema | dbMongoDB.schemaObj,
     options?: dbMongoDB.modelOptions,
