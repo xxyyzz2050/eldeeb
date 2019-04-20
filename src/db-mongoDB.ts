@@ -1,4 +1,12 @@
-//todo: rename to dbMongoDB
+/* todo:
+class{
+ constructor(){-nothing-}
+ connect(){return promise}
+}
+new db().connect(options).then(..) //because constructor must return this 'TypeScript'
+or: new db(options).then(..) //is a valid typeScript?
+constructor():Type{} //error: type annotation cannot apear on constructor
+*/
 import * as mongoose from "mongoose";
 import { generate as shortId } from "shortId";
 import $eldeeb from "./index.js";
@@ -7,7 +15,7 @@ let eldeeb = new $eldeeb({
   mark: "db/mongoDB"
 });
 
-export = class /*todo: extends mongoose.constructor*/ {
+export default class /*todo: extends mongoose.constructor*/ {
   //mongoose/lib/index.js exports new mongoose(), not the class itself; also mongoose is a Function
 
   private promise; //todo: promise: eldeeb.promise
@@ -423,7 +431,7 @@ export = class /*todo: extends mongoose.constructor*/ {
     return array; //todo: return a string of elements separated by the delimeter
   }
   //----------------------- /aggregation helpers ------------------------ //
-};
+}
 
 /*class db_mongoDB_model extends mongoose.Model {
   constructor(public coll, public schema) {
