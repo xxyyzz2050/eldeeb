@@ -25,17 +25,20 @@ export default class /*todo: extends mongoose.constructor*/ {
   public pk;
   public uri;
 
-  //public test:eldeeb or $eldeeb or typeof eldeeb or typeof $eldeeb
-  constructor(
-    options?: dbMongoDB.connectionOptions,
-    done?: promise.NEXT,
-    fail?: promise.NEXT,
-    events?: any
-  ) {
+  constructor() {
     //todo: return Promise ; events:function
     //note: if this class didn't extends mongoose, 1- don't use super() 2- use mongoose instead of this to access mongoose properties
     //when extends
     //super(options)
+    return this;
+  }
+
+  connect(
+    options?: dbMongoDB.connectionOptions,
+    done?: promise.NEXT,
+    fail?: promise.NEXT,
+    events?: any
+  ) /* todo: : eldeeb.promise*/ {
     return eldeeb.run(["()", options /*,callback*/], () => {
       this.promise = eldeeb.promise(
         (resolve, reject) => {
@@ -175,17 +178,6 @@ export default class /*todo: extends mongoose.constructor*/ {
 
       return this.promise;
     }); //run
-  }
-
-  connect(
-    options: dbMongoDB.connectionOptions,
-    done: promise.NEXT,
-    fail: promise.NEXT
-  ) {
-    //this function just creats a new instance of this class
-    return eldeeb.run(["connect", options /*,callback*/], () => {
-      return new this(options, done, fail);
-    });
   }
 
   encode(str: string) {
