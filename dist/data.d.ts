@@ -1,6 +1,6 @@
 import fs from "fs";
 declare const _default: {
-    new (root: string): {
+    new (root?: fs.PathLike): {
         root: string;
         mtime(file: fs.PathLike): number | bigint;
         path(path: fs.PathLike): string;

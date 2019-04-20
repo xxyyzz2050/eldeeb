@@ -11,7 +11,8 @@ let eldeeb = new $eldeeb({
 });
 
 export = class {
-  constructor(public root?: data.PathLike) {
+  public root: string;
+  constructor(root?: data.PathLike) {
     eldeeb.run({ run: "{}", ...arguments }, () => {
       this.root = Path.resolve(root.toString() || ""); //if it null it will be the current working dir (of the working script)
     });

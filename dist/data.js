@@ -18,9 +18,8 @@ let eldeeb = new index_js_1.default({
 });
 module.exports = class {
     constructor(root) {
-        this.root = root;
         eldeeb.run(Object.assign({ run: "{}" }, arguments), () => {
-            this.root = path_1.default.resolve(root || "");
+            this.root = path_1.default.resolve(root.toString() || "");
         });
     }
     mtime(file) {
