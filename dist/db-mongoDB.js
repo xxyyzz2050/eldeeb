@@ -9,14 +9,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = __importStar(require("mongoose"));
 const shortId_1 = require("shortId");
 const index_js_1 = __importDefault(require("./index.js"));
 let eldeeb = new index_js_1.default({
     mark: "db/mongoDB"
 });
-module.exports = class {
-    constructor(options, done, fail, events) {
+class default_1 {
+    constructor() {
+        return this;
+    }
+    connect(options, done, fail, events) {
         return eldeeb.run(["()", options], () => {
             this.promise = eldeeb.promise((resolve, reject) => {
                 let err = eldeeb.error(100), defaultOptions = {
@@ -115,11 +119,6 @@ module.exports = class {
             return this.promise;
         });
     }
-    connect(options, done, fail) {
-        return eldeeb.run(["connect", options], () => {
-            return new this(options, done, fail);
-        });
-    }
     encode(str) {
         return encodeURIComponent(str).replace(/%/g, "%25");
     }
@@ -212,7 +211,7 @@ module.exports = class {
             return schema;
         });
     }
-    db_mongoDB_model(coll, schema, options, indexes) {
+    model(coll, schema, options, indexes) {
         if (!this.connection)
             return { model: null, schema: null };
         return eldeeb.run(["model", schema, options], () => {
@@ -290,5 +289,6 @@ module.exports = class {
         delimeter = delimeter || ",";
         return array;
     }
-};
+}
+exports.default = default_1;
 //# sourceMappingURL=db-mongoDB.js.map

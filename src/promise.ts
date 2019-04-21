@@ -173,7 +173,7 @@ export default class promise extends Promise<any> {
         //return this.when(done, fail, false, true)
         //console.log('done:', done)
         //console.log('fail:', fail)
-        return super.then(done, fail); //nx: how to return this as a new promise??
+        return super.then(done, fail); //error: Uncaught SyntaxError: 'super' keyword unexpected here;  nx: how to return this as a new promise??
       }
       return this;
     });

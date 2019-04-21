@@ -11,19 +11,20 @@ let eldeeb = new $eldeeb({
 });
 
 export = class {
-  constructor(public root: string) {
+  public root: string;
+  constructor(root?: data.PathLike) {
     eldeeb.run({ run: "{}", ...arguments }, () => {
-      this.root = Path.resolve(root || ""); //if it null it will be the current working dir (of the working script)
+      this.root = Path.resolve(root.toString() || ""); //if it null it will be the current working dir (of the working script)
     });
   }
 
-  mtime(file: data.PathLike) {
+  mtime(file: data.PathLike): number | bigint {
     //modified time of a file in MS
     return eldeeb.run({ run: "", ...arguments }, () => {
       return fs.statSync(file).mtimeMs;
     });
   }
-  path(path: data.PathLike) {
+  path(path: data.PathLike): string {
     //add root & normalize the path to guarantee that the path seperator type of the operating system will be used consistently (e.g. this will turn C:\directory/test into C:\directory\test (when being on Windows)
     return eldeeb.run({ run: "", ...arguments }, () => {
       return Path.normalize(Path.join(this.root, path.toString())); //nx: resolve()?
@@ -32,8 +33,8 @@ export = class {
   cache(
     file: data.PathLike,
     data?: any,
-    expire?: number,
-    json?: boolean,
+    expire?: number, //in hours
+    type?: string,
     allowEmpty?: boolean
   ) {
     /*  returns a promise (because some operations executed in async mode) , use await or .then()
@@ -42,30 +43,31 @@ export = class {
     */
     return eldeeb.run({ run: "cache", ...arguments }, async () => {
       let now = eldeeb.now();
-      this.mkdir(Path.dirname(file.toString()));
       file = this.path(file);
+      this.mkdir(Path.dirname(file));
       expire *= 60 * 60 * 1000; //ms
+
       if (
         !fs.existsSync(file) ||
-        (!isNaN(expire) && (expire < 0 || this.mtime(file) + expire < now))
+        (!isNaN(expire) &&
+          (expire < 0 || <number>this.mtime(file) + expire < now)) //todo: convert this.mimetime() to number or convert expire to bigInt??
       ) {
+        //save data to file, and return the original data
         eldeeb.log(`cache: ${file} updated`);
         if (typeof data == "function") data = await data(); //data() may be async or a Promise
-        if (eldeeb.isArray(data) || eldeeb.objectType(data) == "object") {
-          let string = JSON.stringify(data);
-          fs.writeFileSync(file, string);
-          if (data == "string") return string;
-          else return data;
-        } else {
-          if (allowEmpty || !eldeeb.isEmpty(data)) fs.writeFileSync(file, data);
-          if (json) return JSON.parse(data);
-          else return data;
-        }
+        let dataType = eldeeb.objectType(data);
+        if (dataType == "array" || dataType == "object")
+          fs.writeFileSync(file, JSON.stringify(data));
+        else if (allowEmpty || !eldeeb.isEmpty(data))
+          fs.writeFileSync(file, data);
+        //todo: do we need to convert data to string? i.e: writeFileSync(file.toString()), try some different types of data
       } else {
+        //retrive data from file and return it as the required type
         data = fs.readFileSync(file, "utf8"); //without encoding (i.e utf-8) will return a stream insteadof a string
-        if (json) return JSON.parse(data);
-        else return data;
+        if (type == "json") return JSON.parse(data);
+        //todo: elseif(type=="number") elseif ...
       }
+      return data;
     });
   }
 
@@ -73,7 +75,7 @@ export = class {
     path: data.PathLike | data.PathLike[],
     mode?: number | string, //ex: 0777
     index?: string | boolean //ex: index.html
-  ) {
+  ): boolean | boolean[] {
     return eldeeb.run({ run: "mkdir", ...arguments }, () => {
       if (path instanceof Array)
         return path.map(el => this.mkdir(el, mode, index));
@@ -102,10 +104,10 @@ export = class {
       }*/
 
       try {
-        path = <data.PathLike>path;
+        //path = <data.PathLike>path;
         fs.existsSync(path) || fs.mkdirSync(path, { recursive: true });
         if (index !== false) {
-          if (!index) index = '<meta http-equiv="REFRESH" content="0;url=/">';
+          if (!index) index = '<meta http-equiv="REFRESH" content="0;url=/">'; //null or undefined
           fs.writeFileSync(Path.join(path.toString(), "index.htm"), index);
           return true;
         }
@@ -126,7 +128,8 @@ export = class {
   options?: { [name: string]: any } https://stackoverflow.com/questions/42027864/is-there-any-way-to-target-the-plain-javascript-object-type-in-typescript
   */
 
-  delete(path: data.PathLike, options?: data.deleteOptions) {
+  //todo: return boolean
+  delete(path: data.PathLike, options?: data.deleteOptions): void {
     return eldeeb.run({ run: "delete", ...arguments }, () => {
       if (!path) return;
       path = this.path(path);
@@ -142,7 +145,7 @@ export = class {
     });
   }
 
-  inArray(array: any[], el: any) {
+  inArray(array: any[], el: any): boolean {
     return eldeeb.run({ run: "inArray", ...arguments }, () =>
       array.includes(el)
     );

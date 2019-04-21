@@ -1,4 +1,12 @@
-//todo: rename to dbMongoDB
+/* todo:
+class{
+ constructor(){-nothing-}
+ connect(){return promise}
+}
+new db().connect(options).then(..) //because constructor must return this 'TypeScript'
+or: new db(options).then(..) //is a valid typeScript?
+constructor():Type{} //error: type annotation cannot apear on constructor
+*/
 import * as mongoose from "mongoose";
 import { generate as shortId } from "shortId";
 import $eldeeb from "./index.js";
@@ -7,7 +15,7 @@ let eldeeb = new $eldeeb({
   mark: "db/mongoDB"
 });
 
-export = class /*todo: extends mongoose.constructor*/ {
+export default class /*todo: extends mongoose.constructor*/ {
   //mongoose/lib/index.js exports new mongoose(), not the class itself; also mongoose is a Function
 
   private promise; //todo: promise: eldeeb.promise
@@ -17,17 +25,20 @@ export = class /*todo: extends mongoose.constructor*/ {
   public pk;
   public uri;
 
-  //public test:eldeeb or $eldeeb or typeof eldeeb or typeof $eldeeb
-  constructor(
-    options?: dbMongoDB.connectionOptions,
-    done?: promise.NEXT,
-    fail?: promise.NEXT,
-    events?: any
-  ) {
+  constructor() {
     //todo: return Promise ; events:function
     //note: if this class didn't extends mongoose, 1- don't use super() 2- use mongoose instead of this to access mongoose properties
     //when extends
     //super(options)
+    return this;
+  }
+
+  connect(
+    options?: dbMongoDB.connectionOptions,
+    done?: promise.NEXT,
+    fail?: promise.NEXT,
+    events?: any
+  ) /* todo: : eldeeb.promise*/ {
     return eldeeb.run(["()", options /*,callback*/], () => {
       this.promise = eldeeb.promise(
         (resolve, reject) => {
@@ -167,17 +178,6 @@ export = class /*todo: extends mongoose.constructor*/ {
 
       return this.promise;
     }); //run
-  }
-
-  connect(
-    options: dbMongoDB.connectionOptions,
-    done: promise.NEXT,
-    fail: promise.NEXT
-  ) {
-    //this function just creats a new instance of this class
-    return eldeeb.run(["connect", options /*,callback*/], () => {
-      return new this(options, done, fail);
-    });
   }
 
   encode(str: string) {
@@ -320,7 +320,8 @@ export = class /*todo: extends mongoose.constructor*/ {
     });
   }
 
-  db_mongoDB_model(
+  model(
+    //renamed from db_mongoDB_model()
     coll: string,
     schema?: string | mongoose.Schema | dbMongoDB.schemaObj,
     options?: dbMongoDB.modelOptions,
@@ -423,7 +424,7 @@ export = class /*todo: extends mongoose.constructor*/ {
     return array; //todo: return a string of elements separated by the delimeter
   }
   //----------------------- /aggregation helpers ------------------------ //
-};
+}
 
 /*class db_mongoDB_model extends mongoose.Model {
   constructor(public coll, public schema) {
