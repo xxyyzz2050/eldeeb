@@ -1,5 +1,7 @@
 /*
 import x=require(); for types only http://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
+//todo: https://github.com/Microsoft/TypeScript/issues/15397 , https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work ,
+
 */
 
 import $eldeeb from "./index.js";
@@ -40,7 +42,7 @@ promise.finally() is 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaSc
 //type FN = ((resolve?: any, reject?: any) => any) | Array<any>;
 //from: lib.es2015.promise.d.ts (but it also returns void | Array of race functions)
 
-export default class promise extends Promise<any> {
+export default class  extends Promise<any> {
   //todo: class promise<T> extends Promise<T>
   /*
   why Promise<any>? check theese links
@@ -145,7 +147,8 @@ export default class promise extends Promise<any> {
     });
   }
 
-  then(done?: promise.NEXT, fail?: promise.NEXT, stop?: boolean) {
+
+  then(done?: promise.NEXT, fail?: promise.NEXT, stop?: boolean): Promise<any>  {
     return eldeeb.run({ run: "then", ...arguments }, async () => {
       //nx: if the promise not settled call this.resolve()
       // nx: if (eldeeb.objectType(fn) == 'object' &&fn.then &&typeof obj.then == 'function') {//thenable object}
@@ -178,7 +181,6 @@ export default class promise extends Promise<any> {
       return this;
     });
   }
-
   done(done: promise.NEXT, stop?: boolean) {
     return this.then(done, null, typeof stop == "undefined" ? true : false); //default:stop=true
   }
