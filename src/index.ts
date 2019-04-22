@@ -225,7 +225,7 @@ todo: what is the usage of this function?
     //merge objects,arrays,classes (must besame type) ;
     //don't use "arguments" in an arrow functions
     return this.run(["merge", ...arguments], function() {
-      let type = this.objectType(target);
+      let type = this.objectType(target); //todo: error: Cannot read property 'objectType' of undefined
       for (var i = 1; i < arguments.length; i++) {
         if (this.objectType(arguments[i]) !== type) return target;
       }
