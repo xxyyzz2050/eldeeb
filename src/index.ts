@@ -164,7 +164,7 @@ todo: what is the usage of this function?
     return this.run({ run: "eldeeb/inArray", ...arguments }, () => {
       if (!sensitive && typeof el == "string") el = el.toLowerCase();
       if (this.isArray(arr)) {
-        for (var i = 0; i < (<Array<any>>arr).length; i++) {
+        for (let i = 0; i < (<Array<any>>arr).length; i++) {
           if (!sensitive && typeof arr[i] == "string")
             arr[i] = arr[i].toLowerCase();
           if (arr[i] == el) return true;
@@ -223,19 +223,20 @@ todo: what is the usage of this function?
 
   merge(target: any, ...obj: any[]): any {
     //merge objects,arrays,classes (must besame type) ;
-    //don't use "arguments" in an arrow functions
-    return this.run(["merge", ...arguments], function() {
+    //don't use "arguments" in an arrow functions, also don't use 'this' inside a normal function, so we declare a new variable = arguments
+    let _arg = arguments; //the arguments of merge() not run()
+    return this.run(["merge", ..._arg], function() {
       let type = this.objectType(target); //todo: error: Cannot read property 'objectType' of undefined
-      for (var i = 1; i < arguments.length; i++) {
-        if (this.objectType(arguments[i]) !== type) return target;
+      for (let i = 1; i < _arg.length; i++) {
+        if (this.objectType(_arg[i]) !== type) return target;
       }
       if (type == "array") {
         target = target.concat(...obj);
       } else if (type == "object") {
         //target=Object.assign(target,...obj) //later objects dosen't override previous ones
-        for (var i = 1; i < arguments.length; i++) {
-          for (var p in arguments[i]) {
-            target[p] = arguments[i][p]; //to override current values
+        for (let i = 1; i < _arg.length; i++) {
+          for (let p in _arg[i]) {
+            target[p] = _arg[i][p]; //to override current values
           }
         }
       } else if (type == "class") {
