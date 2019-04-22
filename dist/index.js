@@ -82,7 +82,7 @@ module.exports = class {
             if (!sensitive && typeof el == "string")
                 el = el.toLowerCase();
             if (this.isArray(arr)) {
-                for (var i = 0; i < arr.length; i++) {
+                for (let i = 0; i < arr.length; i++) {
                     if (!sensitive && typeof arr[i] == "string")
                         arr[i] = arr[i].toLowerCase();
                     if (arr[i] == el)
@@ -114,19 +114,20 @@ module.exports = class {
         return typeof obj == "undefined" || this.inArray(obj, ["", null, [], {}]);
     }
     merge(target, ...obj) {
-        return this.run(["merge", ...arguments], function () {
+        let _arg = arguments;
+        return this.run(["merge", ..._arg], () => {
             let type = this.objectType(target);
-            for (var i = 1; i < arguments.length; i++) {
-                if (this.objectType(arguments[i]) !== type)
+            for (let i = 1; i < _arg.length; i++) {
+                if (this.objectType(_arg[i]) !== type)
                     return target;
             }
             if (type == "array") {
                 target = target.concat(...obj);
             }
             else if (type == "object") {
-                for (var i = 1; i < arguments.length; i++) {
-                    for (var p in arguments[i]) {
-                        target[p] = arguments[i][p];
+                for (let i = 1; i < _arg.length; i++) {
+                    for (let p in _arg[i]) {
+                        target[p] = _arg[i][p];
                     }
                 }
             }
