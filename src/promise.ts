@@ -42,7 +42,7 @@ promise.finally() is 'Draft' https://developer.mozilla.org/en-US/docs/Web/JavaSc
 //type FN = ((resolve?: any, reject?: any) => any) | Array<any>;
 //from: lib.es2015.promise.d.ts (but it also returns void | Array of race functions)
 
-export default class  extends Promise<any> {
+export default class extends Promise<any> {
   //todo: class promise<T> extends Promise<T>
   /*
   why Promise<any>? check theese links
@@ -50,8 +50,9 @@ export default class  extends Promise<any> {
   https://github.com/Microsoft/TypeScript/issues/21549
   */
   public clearTimeout: <T>(value?: T | PromiseLike<T>) => void; //same type of resolve; check this.wait(); //todo: remove from class properties, move scope to .wait()
+   private _promise:Promise<any>;
   constructor(
-    fn: promise.FN,
+    fn: any, //promise.FN | Array<promise.FN>,
     done?: promise.NEXT,
     failed?: promise.NEXT,
     public $stop?: boolean
@@ -65,24 +66,25 @@ export default class  extends Promise<any> {
         if (eldeeb.objectType(fn) == "array") {
           //array of functions or promises
           let tmp = fn; //don't use: fn=r=>Promise.all(fn)
-          return Promise.all(tmp).then(done, failed);
+          this._promise= Promise.all(tmp).then(done, failed);
         }
         //todo: cannot use this.all() before super()
         //else fn = r => r(fn); //todo: what is r??
       }
       this.$stop = false;
-      if (done || failed) return this.then(done, failed, $stop);
+      if (done || failed) this._promise= this.then(done, failed, $stop);
 
-      return this; //don't return promise to enable chaining for other (non-promise) functions such as done() and to customise then
+      return this; //don't return promise to enable chaining for other (non-Promise) functions such as done() and to customise then, also typescript don't allow returning any other type than 'this'
     });
   }
   when(
-    fn: promise.FN,
+    fn: any,
     done?: promise.NEXT,
     failed?: promise.NEXT,
     stop?: boolean
   ) {
-    return new promise(fn, done, failed, stop);
+    console.log(this)
+    return new (<any>this)(fn, done, failed, stop); //todo: removing <any> gives typescript error: cannot use 'new' within an expression whose type lacks a call or construct signature
 
     /*
     now wait() creats a new instance of this class, before it was change this.promise value witch make problems:
@@ -176,7 +178,8 @@ export default class  extends Promise<any> {
         //return this.when(done, fail, false, true)
         //console.log('done:', done)
         //console.log('fail:', fail)
-        return super.then(done, fail); //error: Uncaught SyntaxError: 'super' keyword unexpected here;  nx: how to return this as a new promise??
+        return this._promise.then(done, fail)
+        //return super.then(done, fail); //error: Uncaught SyntaxError: 'super' keyword unexpected here;  nx: how to return this as a new promise??
       }
       return this;
     });
@@ -235,7 +238,7 @@ export default class  extends Promise<any> {
   }
 
   //###### static methods: race,all,reject,resolve; use Promice.race() not this.promise.race
-  all(promises: Array<any>, done?: promise.NEXT, fail?: promise.NEXT) {
+   all(promises: Array<any>, done?: promise.NEXT, fail?: promise.NEXT) {
     //if (!eldeeb.isArray(promises)) return this; //nx: or any iterable ->see eldeeb.isArray()
     return this.then(() => Promise.all(promises)).then(done, fail);
     //done() accept array of arguments, one for each promise

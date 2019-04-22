@@ -1,10 +1,6 @@
 {
   "name": "eldeeb",
-<<<<<<< HEAD
-  "version": "1.0.11",
-=======
   "version": "1.0.14",
->>>>>>> f586b7aa4b9eae9218176e33279ee2a8e60688ca
   "description": "",
   "main": "index.js",
   "directories": {

@@ -15,7 +15,7 @@ const index_js_1 = __importDefault(require("./index.js"));
 let eldeeb = new index_js_1.default({
     mark: "promise"
 });
-class promise extends Promise {
+class default_1 extends Promise {
     constructor(fn, done, failed, $stop) {
         super(fn);
         this.$stop = $stop;
@@ -23,17 +23,18 @@ class promise extends Promise {
             if (typeof fn != "function") {
                 if (eldeeb.objectType(fn) == "array") {
                     let tmp = fn;
-                    return Promise.all(tmp).then(done, failed);
+                    this._promise = Promise.all(tmp).then(done, failed);
                 }
             }
             this.$stop = false;
             if (done || failed)
-                return this.then(done, failed, $stop);
+                this._promise = this.then(done, failed, $stop);
             return this;
         });
     }
     when(fn, done, failed, stop) {
-        return new promise(fn, done, failed, stop);
+        console.log(this);
+        return new this(fn, done, failed, stop);
     }
     wait(seconds, done, fail, stop) {
         return eldeeb.run(Object.assign({ run: "wait" }, arguments), () => {
@@ -70,7 +71,7 @@ class promise extends Promise {
                     tmp = fail;
                     fail = () => tmp;
                 }
-                return super.then(done, fail);
+                return this._promise.then(done, fail);
             }
             return this;
         }));
@@ -125,5 +126,5 @@ class promise extends Promise {
         return this;
     }
 }
-exports.default = promise;
+exports.default = default_1;
 //# sourceMappingURL=promise.js.map
