@@ -256,7 +256,7 @@ todo: what is the usage of this function?
           .pop()
           .toLowerCase() == "json"
       )
-        return require(data); //load a .json file
+        return require(data); //load a .json file, todo: ES2015 modules don't allow dynamic imports, and causes typescript error: 'Critical dependency: the request of a dependency is an expression'
       data = require("fs").readFileSync(data);
       return JSON.parse(<string>data);
     } else return JSON.stringify(data);

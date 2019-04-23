@@ -331,7 +331,7 @@ export default class /*todo: extends mongoose.constructor*/ {
     //todo: field: anotherSchema ??
     if (!this.connection) return { model: null, schema: null };
     return eldeeb.run(["model", schema, options], () => {
-      if (typeof schema == "string") schema = require(schema) || {};
+      if (typeof schema == "string") schema = require(schema) || {}; //todo: dynamic import -> see index/json()
       else if (schema == null || typeof schema == "undefined") {
         schema = require(`${this.models}/${coll}.${this.ext}`) || {};
       }
