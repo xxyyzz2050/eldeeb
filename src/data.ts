@@ -10,7 +10,7 @@ let eldeeb = new $eldeeb({
   mark: "data"
 });
 
-export = class {
+export default class {
   public root: string;
   constructor(root?: data.PathLike) {
     eldeeb.run({ run: "{}", ...arguments }, () => {
@@ -150,4 +150,4 @@ export = class {
       array.includes(el)
     );
   }
-};
+}
