@@ -9,7 +9,8 @@ constructor():Type{} //error: type annotation cannot apear on constructor
 */
 import * as mongoose from "mongoose";
 import { generate as shortId } from "shortId";
-import $eldeeb from "./index.js";
+import $eldeeb from "./index";
+
 
 let eldeeb = new $eldeeb({
   mark: "db/mongoDB"
@@ -146,7 +147,7 @@ export default class /*todo: extends mongoose.constructor*/ {
           options = eldeeb.merge(defaultOptions, options);
           //if (eldeeb.options.log)  console.log('connection details:', this.uri, options)
 
-          this.connection = mongoose.createConnection(this.uri, options);
+          this.connection  = mongoose.createConnection(this.uri, options); //todo: convert to eldeeb.promise
           if (!this.connection)
             reject({
               ...err,
@@ -158,7 +159,7 @@ export default class /*todo: extends mongoose.constructor*/ {
             });
           if (events) this.on("all", ev => events(ev)); //this will be run for all events, .then(..db.on('all')) will be run for all events AFTER 'open' because .then() only occurs after 'open' stage
           this.connection.then(
-            () => resolve(this), //db is connected & open, using .on() will be run on other events
+            () => resolve(<any>this), //db is connected & open, using .on() will be run on other events
             error =>
               reject({
                 ...err,

@@ -12,8 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = __importStar(require("mongoose"));
 const shortId_1 = require("shortId");
-const index_js_1 = __importDefault(require("./index.js"));
-let eldeeb = new index_js_1.default({
+const index_1 = __importDefault(require("./index"));
+let eldeeb = new index_1.default({
     mark: "db/mongoDB"
 });
 class default_1 {
